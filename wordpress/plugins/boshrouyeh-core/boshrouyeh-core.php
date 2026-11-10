@@ -34,6 +34,7 @@ require_once BMN_CORE_DIR . 'includes/class-pwa.php';
 require_once BMN_CORE_DIR . 'includes/class-demo.php';
 require_once BMN_CORE_DIR . 'includes/class-news-import.php';
 require_once BMN_CORE_DIR . 'includes/class-app-update.php';
+require_once BMN_CORE_DIR . 'includes/class-updater.php';
 
 add_action( 'plugins_loaded', 'bmn_core_boot' );
 /**
@@ -53,6 +54,7 @@ function bmn_core_boot() {
 	BMN_Demo::init();
 	BMN_News_Import::init();
 	BMN_App_Update::init();
+	BMN_Updater::init();
 }
 
 register_activation_hook( __FILE__, 'bmn_core_activate' );

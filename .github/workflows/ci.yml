@@ -123,10 +123,38 @@ jobs:
         with:
           name: boshrouyeh-man-apk
           path: app/build/boshrouyeh.apk
-      - name: Publish GitHub Release (in-app updater reads this)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.SIGNED == '1'
+      - name: Publish GitHub Release (in-app updater reads the latest signed one)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           NOTES="$(git log -1 --pretty=%s)"
-          gh release create "v$APP_VERSION" build/boshrouyeh.apk --title "بشرویهٔ من $APP_VERSION" --notes "$NOTES" --latest
+          if [ "${SIGNED:-0}" = "1" ]; then
+            gh release create "v$APP_VERSION" build/boshrouyeh.apk --title "بشرویهٔ من $APP_VERSION" --notes "$NOTES" --latest
+          else
+            gh release create "v$APP_VERSION-dev" build/boshrouyeh.apk --prerelease --title "بشرویهٔ من $APP_VERSION (نسخهٔ آزمایشی، امضای موقت)" \
+              --notes "$NOTES — برای بروزرسانی خودکار، secret با نام ANDROID_KEYSTORE_PASSWORD را در تنظیمات مخزن اضافه کنید."
+          fi
+
+  wordpress-package:
+    name: WordPress zips (theme + plugins) → release wp-latest
+    runs-on: ubuntu-latest
+    needs: [php, e2e]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build zips
+        run: |
+          mkdir -p dist
+          (cd wordpress/themes && zip -qr -X ../../dist/boshrouyeh-khesht.zip boshrouyeh-khesht)
+          for p in boshrouyeh-core boshrouyeh-eservices khesht-builder; do (cd wordpress/plugins && zip -qr -X ../../dist/$p.zip $p); done
+          ls -la dist
+      - name: Publish to release wp-latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view wp-latest >/dev/null 2>&1 || gh release create wp-latest --prerelease --title "WordPress: قالب و افزونه‌ها (آخرین)" --notes "بستهٔ نصبی قالب خشت و افزونه‌ها؛ با هر push به main بروز می‌شود."
+          gh release upload wp-latest dist/*.zip --clobber
+          gh release edit wp-latest --notes "بروزرسانی: $(git log -1 --pretty='%h %s')"
