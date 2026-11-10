@@ -8,9 +8,11 @@ import '../models/models.dart';
 import '../theme/brand.dart';
 import '../widgets/brand_widgets.dart';
 import 'dues_screen.dart';
+import 'fleet_screen.dart';
 import 'neighborhood_screen.dart';
 import 'report_screen.dart';
 import 'track_screen.dart';
+import 'visits_screen.dart';
 
 class ServiceDetailScreen extends StatefulWidget {
   const ServiceDetailScreen({super.key, required this.id, required this.title});
@@ -37,11 +39,16 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         page = const ReportScreen(standalone: true);
       case 'tracking':
         page = const TrackScreen();
+      case 'visits':
+        page = const VisitsScreen();
+      case 'fleet':
+        page = const FleetScreen();
       case 'waste':
         page = const NeighborhoodScreen();
       case 'request':
       case 'appointment':
       case 'feedback':
+      case 'complaint':
         page = ReportScreen(standalone: true, type: s.eservice == 'request' ? 'request' : s.eservice, serviceId: s.id, title: s.title);
     }
     if (page != null) {

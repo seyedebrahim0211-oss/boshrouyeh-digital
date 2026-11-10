@@ -7,6 +7,7 @@ import '../core/format.dart';
 import '../models/models.dart';
 import '../theme/brand.dart';
 import '../widgets/brand_widgets.dart';
+import '../widgets/k_icon.dart';
 
 class TrackScreen extends StatefulWidget {
   const TrackScreen({super.key});
@@ -83,6 +84,15 @@ class RequestCard extends StatelessWidget {
           ]),
           const SizedBox(height: 4),
           Text('کد پیگیری ${faDigits(item.tracking)} | ${item.createdFa}', style: t.bodySmall),
+          if (item.unit.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Row(children: [
+                const KIcon('building', size: 16, color: Brand.qanat),
+                const SizedBox(width: 6),
+                Expanded(child: Text('واحد رسیدگی‌کننده: ${item.unit}', style: const TextStyle(fontWeight: FontWeight.w800, color: Brand.qanat))),
+              ]),
+            ),
           const SizedBox(height: 10),
           StepProgress(item.progress),
           if (expanded && item.timeline.isNotEmpty) ...[
@@ -90,7 +100,7 @@ class RequestCard extends StatelessWidget {
             ...item.timeline.reversed.map((e) => Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Container(margin: const EdgeInsets.only(top: 6), width: 10, height: 10, decoration: const BoxDecoration(color: Brand.qanat, shape: BoxShape.circle)),
+                    Container(margin: const EdgeInsets.only(top: 6), width: 10, height: 10, decoration: BoxDecoration(color: e.referral ? Brand.khesht : Brand.qanat, shape: BoxShape.circle)),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

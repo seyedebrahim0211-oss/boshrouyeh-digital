@@ -137,3 +137,40 @@
 
 .bmn-login__logo { color: var(--_b); flex: none; display: grid; place-items: center; width: 70px; height: 70px; border-radius: 50%; background: var(--kh-tint, #F3E6D2); }
 html[data-theme="dark"] .bmn-login__logo, .bmn-start .bmn-login__logo { color: var(--kh-kahgel, #E2C9A3); background: rgba(255,255,255,.08); }
+
+/* ---------- Mayor visits: follow-up dossiers ---------- */
+.bmn-visit-meta{display:flex;flex-wrap:wrap;gap:8px 18px;list-style:none;padding:0;margin:0 0 1.2em;color:var(--kh-brick,#6E3B23);font-weight:700}
+.bmn-ords{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));margin:1em 0}
+.bmn-ord{display:block;background:#fff;border:1px solid #eadcc6;border-radius:18px 18px 6px 6px;padding:16px 18px;box-shadow:0 6px 18px rgba(31,42,68,.06)}
+.bmn-ord.is-overdue{border-color:#c46a4d;box-shadow:0 0 0 2px rgba(196,106,77,.15)}
+.bmn-ord header{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.bmn-ord__code{font-size:.85em;color:#7a6a58}
+.bmn-ord__rows{display:flex;flex-direction:column;gap:6px}
+.bmn-ord__row{display:flex;gap:12px;align-items:flex-start}
+.bmn-ord__k{flex:0 0 92px;font-weight:800;color:var(--kh-qanat,#16737A)}
+.bmn-ord__v{flex:1 1 auto;min-width:0;line-height:1.8}
+.bmn-ord__bar{height:8px;background:#f1e6d4;border-radius:8px;overflow:hidden;margin:12px 0 6px}
+.bmn-ord__bar span{display:block;height:100%;background:linear-gradient(90deg,var(--kh-qanat,#16737A),#2aa39b)}
+.bmn-ord__meta,.bmn-ord__visit{font-size:.88em;color:#6b5d4e;margin:.3em 0}
+.bmn-ord details{margin-top:8px}.bmn-ord summary{cursor:pointer;font-weight:700}
+.bmn-ord-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:16px}
+.bmn-ord-stats div{background:var(--kh-milk,#F6EEE1);border-radius:16px;padding:14px;text-align:center}
+.bmn-ord-stats strong{display:block;font-size:2em;color:var(--kh-brick,#6E3B23);line-height:1.2}
+.bmn-ord-filter{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.bmn-ord-filter input,.bmn-ord-filter select{padding:.55em .8em;border:1px solid #dccbb0;border-radius:12px;font:inherit;min-width:0;flex:1 1 160px}
+.dark .bmn-ord,.is-style-night .bmn-ord{background:#1d2738;border-color:#33415a}
+
+/* ---------- Live minibus map ---------- */
+.bmn-fleet{display:grid;gap:16px;grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+@media (max-width:820px){.bmn-fleet{grid-template-columns:1fr}}
+.bmn-fleet__map{min-height:440px;border-radius:18px;overflow:hidden;border:1px solid #eadcc6}
+.bmn-fleet__list{max-height:520px;overflow:auto}
+.bmn-fleet__route h3{display:flex;align-items:center;gap:8px;margin:.4em 0}
+.bmn-fleet__route h3 i{width:14px;height:14px;border-radius:50%;display:inline-block}
+.bmn-fleet__meta{font-size:.88em;color:#6b5d4e;margin:0 0 .5em}
+.bmn-fleet__bus{background:#fff;border:1px solid #eadcc6;border-radius:14px;padding:10px 12px;margin:0 0 8px;opacity:.7}
+.bmn-fleet__bus.is-online{opacity:1;border-inline-start:4px solid var(--kh-qanat,#16737A)}
+.bmn-bus span{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;color:#fff;font-size:13px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.bmn-bus.is-offline span{filter:grayscale(1);opacity:.6}
+.bmn-track-unit{font-weight:800;color:var(--kh-qanat,#16737A);margin:.2em 0 .6em}
+.bmn-timeline li.is-referral strong{color:var(--kh-khesht,#A0673F)}

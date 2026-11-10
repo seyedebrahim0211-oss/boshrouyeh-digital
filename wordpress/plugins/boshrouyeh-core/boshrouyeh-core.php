@@ -3,7 +3,7 @@
  * Plugin Name:       Boshrouyeh Core — هستهٔ شهرداری بشرویه
  * Plugin URI:        https://boshrooyeh.ir
  * Description:       انواع نوشتهٔ سفارشی (خدمت، اطلاعیه، مناقصه، جاذبه، رویداد، شفافیت، متوفیان)، تاریخ شمسی، بلوک‌های پویا، REST API اپ، داده‌های ساختاریافته، PWA و سخت‌سازی امنیتی.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires at least: 6.5
  * Requires PHP:      8.0
  * Author:            Boshrouyeh Municipality Digital Team
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'BMN_CORE_VERSION', '1.0.0' );
+define( 'BMN_CORE_VERSION', '1.1.0' );
 define( 'BMN_CORE_FILE', __FILE__ );
 define( 'BMN_CORE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'BMN_CORE_URL', plugin_dir_url( __FILE__ ) );

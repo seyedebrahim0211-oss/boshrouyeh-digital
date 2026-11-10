@@ -12,14 +12,19 @@ defined( 'ABSPATH' ) || exit;
  */
 final class BMN_ES_Install {
 
-	const DB_VERSION = '1.0';
+	const DB_VERSION = '1.1';
 
 	/**
 	 * Activation.
 	 */
 	public static function activate() {
 		self::tables();
+		BMN_Staff::install_table();
+		BMN_Fleet::install_table();
 		self::roles();
+		BMN_Staff::install_roles();
+		BMN_Staff::seed_units();
+		self::pages();
 		self::private_dir();
 		self::secrets();
 		update_option( 'bmn_es_db', self::DB_VERSION );
@@ -78,28 +83,28 @@ final class BMN_ES_Install {
 	 */
 	public static function roles() {
 		add_role( 'bmn_citizen', __( 'شهروند', 'boshrouyeh-eservices' ), array( 'read' => true ) );
-		$caps = array(
-			'read'                        => true,
-			'edit_bmn_requests'           => true,
-			'edit_others_bmn_requests'    => true,
-			'read_private_bmn_requests'   => true,
-			'edit_private_bmn_requests'   => true,
-			'edit_published_bmn_requests' => true,
-			'publish_bmn_requests'        => true,
-			'bmn_view_payments'           => true,
-			'upload_files'                => true,
+	}
+
+	/**
+	 * Public pages for the visits board and the live minibus map (created once).
+	 */
+	public static function pages() {
+		$pages = array(
+			'directives' => array( 'پیگیری دستورهای بازدید شهردار', '<!-- wp:shortcode -->[bmn_directives]<!-- /wp:shortcode -->' ),
+			'minibus'    => array( 'مینی‌بوس آنلاین', '<!-- wp:paragraph --><p>موقعیت لحظه‌ای مینی‌بوس‌های شهری و زمان تقریبی رسیدن به ایستگاه بعدی.</p><!-- /wp:paragraph --><!-- wp:shortcode -->[bmn_fleet_map]<!-- /wp:shortcode -->' ),
 		);
-		add_role( 'bmn_staff', __( 'کارمند شهرداری', 'boshrouyeh-eservices' ), $caps );
-		$admin = get_role( 'administrator' );
-		if ( $admin ) {
-			foreach ( array_keys( $caps ) as $cap ) {
-				$admin->add_cap( $cap );
+		foreach ( $pages as $slug => $p ) {
+			if ( ! get_page_by_path( $slug ) ) {
+				wp_insert_post(
+					array(
+						'post_type'    => 'page',
+						'post_status'  => 'publish',
+						'post_name'    => $slug,
+						'post_title'   => $p[0],
+						'post_content' => $p[1],
+					)
+				);
 			}
-			$admin->add_cap( 'delete_bmn_requests' );
-			$admin->add_cap( 'delete_others_bmn_requests' );
-			$admin->add_cap( 'delete_published_bmn_requests' );
-			$admin->add_cap( 'delete_private_bmn_requests' );
-			$admin->add_cap( 'bmn_manage_eservices' );
 		}
 	}
 

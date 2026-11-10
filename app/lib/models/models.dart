@@ -87,7 +87,7 @@ class Place {
 }
 
 class RequestItem {
-  RequestItem({required this.id, required this.tracking, required this.type, required this.typeLabel, required this.title, required this.status, required this.statusLabel, required this.progress, required this.createdFa, required this.timeline});
+  RequestItem({required this.id, required this.tracking, required this.type, required this.typeLabel, required this.title, required this.status, required this.statusLabel, required this.progress, required this.createdFa, required this.timeline, this.unit = ''});
   factory RequestItem.fromJson(Map<String, dynamic> j) => RequestItem(
         id: _i(j['id']),
         tracking: _s(j['tracking']),
@@ -98,11 +98,12 @@ class RequestItem {
         statusLabel: _s(j['status_label']),
         progress: _i(j['progress']),
         createdFa: _s(j['created_fa']),
-        timeline: (j['timeline'] as List? ?? const []).map((t) => (label: _s((t as Map)['status_label']), note: _s(t['note']), date: _s(t['date_fa']))).toList(),
+        unit: _s(j['unit']),
+        timeline: (j['timeline'] as List? ?? const []).map((t) => (label: _s((t as Map)['status_label']), note: _s(t['note']), date: _s(t['date_fa']), referral: _s(t['kind']) == 'referral')).toList(),
       );
   final int id, progress;
-  final String tracking, type, typeLabel, title, status, statusLabel, createdFa;
-  final List<({String label, String note, String date})> timeline;
+  final String tracking, type, typeLabel, title, status, statusLabel, createdFa, unit;
+  final List<({String label, String note, String date, bool referral})> timeline;
 
   String get chipKind => switch (status) { 'done' => 'done', 'need' => 'need', 'rejected' => 'closed', 'progress' => 'fast', _ => 'review' };
 }
@@ -154,4 +155,118 @@ class Neighborhood {
       );
   final String slug, name, time;
   final List<int> wasteDays, recycleDays;
+}
+
+/// One directive in a mayor-visit follow-up dossier.
+class Directive {
+  Directive({required this.id, required this.code, required this.issue, required this.order, required this.unit, required this.deadlineFa, required this.daysLeft, required this.funding, required this.fundingNote, required this.status, required this.statusLabel, required this.overdue, required this.progress, required this.updatedFa, required this.log, this.visitId = 0, this.visitTitle = ''});
+  factory Directive.fromJson(Map<String, dynamic> j) {
+    final v = j['visit'] is Map ? Map<String, dynamic>.from(j['visit'] as Map) : const <String, dynamic>{};
+    return Directive(
+      id: _i(j['id']),
+      code: _s(j['code']),
+      issue: _s(j['issue']),
+      order: _s(j['order']),
+      unit: _s(j['unit']),
+      deadlineFa: _s(j['deadline_fa']),
+      daysLeft: j['days_left'] == null ? null : _i(j['days_left']),
+      funding: _s(j['funding']),
+      fundingNote: _s(j['funding_note']),
+      status: _s(j['status']),
+      statusLabel: _s(j['status_label']),
+      overdue: j['overdue'] == true,
+      progress: _i(j['progress']),
+      updatedFa: _s(j['updated_fa']),
+      visitId: _i(v['id']),
+      visitTitle: _s(v['title']),
+      log: (j['log'] as List? ?? const []).map((e) => (label: _s((e as Map)['status_label']), progress: _i(e['progress']), note: _s(e['note']), date: _s(e['date_fa']))).toList(),
+    );
+  }
+  final int id, progress, visitId;
+  final int? daysLeft;
+  final String code, issue, order, unit, deadlineFa, funding, fundingNote, status, statusLabel, updatedFa, visitTitle;
+  final bool overdue;
+  final List<({String label, int progress, String note, String date})> log;
+
+  String get chipKind => switch (status) { 'done' => 'done', 'stopped' => 'need', 'overdue' => 'closed', 'progress' => 'fast', _ => 'review' };
+}
+
+class Visit {
+  Visit({required this.id, required this.title, required this.dateFa, required this.place, required this.neighborhood, required this.excerpt, required this.image, required this.url, required this.total, required this.done, required this.overdue, this.report = '', this.directives = const []});
+  factory Visit.fromJson(Map<String, dynamic> j) {
+    final c = Map<String, dynamic>.from(j['counts'] as Map? ?? const {});
+    return Visit(
+      id: _i(j['id']),
+      title: _s(j['title']),
+      dateFa: _s(j['date_fa']),
+      place: _s(j['place']),
+      neighborhood: _s(j['neighborhood']),
+      excerpt: _s(j['excerpt']),
+      image: _s(j['image']),
+      url: _s(j['url']),
+      total: _i(c['total']),
+      done: _i(c['done']),
+      overdue: _i(c['overdue']),
+      report: _s(j['report']),
+      directives: (j['directives'] as List? ?? const []).map((d) => Directive.fromJson(Map<String, dynamic>.from(d as Map))).toList(),
+    );
+  }
+  final int id, total, done, overdue;
+  final String title, dateFa, place, neighborhood, excerpt, image, url, report;
+  final List<Directive> directives;
+}
+
+class BusStop {
+  BusStop(this.name, this.lat, this.lng);
+  final String name;
+  final double lat, lng;
+}
+
+class Bus {
+  Bus({required this.id, required this.name, required this.plate, required this.online, required this.lat, required this.lng, required this.heading, required this.ago, required this.atStop, required this.last, required this.next, required this.etaMin});
+  factory Bus.fromJson(Map<String, dynamic> j) => Bus(
+        id: _i(j['id']),
+        name: _s(j['name']),
+        plate: _s(j['plate']),
+        online: j['online'] == true,
+        lat: j['lat'] == null ? null : _d(j['lat']),
+        lng: j['lng'] == null ? null : _d(j['lng']),
+        heading: _i(j['heading']),
+        ago: j['ago'] == null ? null : _i(j['ago']),
+        atStop: _s(j['at_stop']),
+        last: _s(j['last']),
+        next: _s(j['next']),
+        etaMin: j['eta_min'] == null ? null : _i(j['eta_min']),
+      );
+  final int id, heading;
+  final int? ago, etaMin;
+  final String name, plate, atStop, last, next;
+  final bool online;
+  final double? lat, lng;
+
+  String get statusText {
+    if (lat == null) return 'هنوز موقعیتی ارسال نشده';
+    if (!online) return 'آفلاین — آخرین موقعیت ${((ago ?? 0) / 60).round()} دقیقه پیش';
+    if (atStop.isNotEmpty) return 'در ایستگاه «$atStop»${next.isNotEmpty ? ' — بعدی: $next' : ''}';
+    if (next.isNotEmpty) return 'از «${last.isEmpty ? '—' : last}» به سمت «$next»${etaMin != null ? ' — حدود $etaMin دقیقه' : ''}';
+    return 'در مسیر';
+  }
+}
+
+class BusRoute {
+  BusRoute({required this.id, required this.name, required this.color, required this.hours, required this.headway, required this.fare, required this.stops, required this.buses});
+  factory BusRoute.fromJson(Map<String, dynamic> j) => BusRoute(
+        id: _i(j['id']),
+        name: _s(j['name']),
+        color: _s(j['color']),
+        hours: _s(j['hours']),
+        headway: _s(j['headway']),
+        fare: _s(j['fare']),
+        stops: (j['stops'] as List? ?? const []).map((s) => BusStop(_s((s as Map)['name']), _d(s['lat']), _d(s['lng']))).toList(),
+        buses: (j['vehicles'] as List? ?? const []).map((v) => Bus.fromJson(Map<String, dynamic>.from(v as Map))).toList(),
+      );
+  final int id;
+  final String name, color, hours, headway, fare;
+  final List<BusStop> stops;
+  final List<Bus> buses;
 }

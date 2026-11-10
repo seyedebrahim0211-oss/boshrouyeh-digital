@@ -439,6 +439,12 @@ final class BMN_ES_Blocks {
 				return $link( 'page_feedback', '/feedback/', __( 'ارسال انتقاد و پیشنهاد', 'boshrouyeh-eservices' ) );
 			case 'request':
 				return self::render( 'request', array( 'serviceId' => $id ) );
+			case 'complaint':
+				return '<p>' . esc_html__( 'شکایت فقط به حراست و بازرسی شهرداری ارجاع می‌شود و محرمانه است.', 'boshrouyeh-eservices' ) . '</p>' . str_replace( 'data-bmn-request="request"', 'data-bmn-request="complaint"', self::render( 'request', array( 'serviceId' => $id ) ) );
+			case 'visits':
+				return '<p>' . esc_html__( 'دستورهای شهردار با واحد مسئول، مهلت، منبع اعتبار و وضعیت فعلی.', 'boshrouyeh-eservices' ) . '</p><a class="kh-btn kh-btn--action kh-btn--block" href="' . esc_url( home_url( '/directives/' ) ) . '">' . esc_html__( 'پیگیری دستورهای بازدید', 'boshrouyeh-eservices' ) . '</a>';
+			case 'fleet':
+				return '<a class="kh-btn kh-btn--action kh-btn--block" href="' . esc_url( home_url( '/minibus/' ) ) . '">' . esc_html__( 'نقشهٔ زندهٔ مینی‌بوس‌ها', 'boshrouyeh-eservices' ) . '</a>';
 		}
 		return $html;
 	}

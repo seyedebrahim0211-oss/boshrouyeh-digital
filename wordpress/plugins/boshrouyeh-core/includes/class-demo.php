@@ -98,7 +98,7 @@ final class BMN_Demo {
 	public static function run() {
 		$n = 0;
 
-		// ---- Service catalogue (8 categories, 54 services) ----
+		// ---- Service catalogue (8 categories, 57 services) ----
 		$catalog = array(
 			array( 'شهرسازی و ساختمان', 'urban', 'building', array(
 				array( 'building-permit', 'صدور و تمدید پروانهٔ ساختمانی', 'permit', 'semi', '۷ تا ۱۵ روز کاری', '', true, 'پروانه ساختمان', 'https://eservices.mrud.ir' ),
@@ -127,6 +127,7 @@ final class BMN_Demo {
 				array( 'lighting-asphalt', 'روشنایی و آسفالت معابر', 'lamp', 'online', '۷۲ ساعت', 'report137' ),
 				array( 'green-space', 'فضای سبز و درخواست درخت', 'tree', 'online', '۷ روز کاری', 'request' ),
 				array( 'public-transport', 'حمل‌ونقل عمومی و تاکسی', 'bus', 'online', 'فوری' ),
+				array( 'minibus-live', 'مینی‌بوس آنلاین (موقعیت لحظه‌ای)', 'bus', 'online', 'لحظه‌ای', 'fleet', true, 'مینی‌بوس آنلاین' ),
 				array( 'water-tanker', 'درخواست تانکر آب‌رسانی', 'drop', 'online', '۲۴ ساعت', 'request' ),
 				array( 'qanat-report', 'گزارش خرابی قنات و مسیل', 'drop', 'online', '۷۲ ساعت', 'report137' ),
 				array( 'bulky-waste', 'جمع‌آوری اقلام حجیم و بازیافت', 'waste', 'online', '۲ روز کاری', 'request' ),
@@ -152,6 +153,8 @@ final class BMN_Demo {
 				array( 'feedback', 'نظرسنجی و انتقاد و پیشنهاد', 'chat', 'online', 'پاسخ ظرف ۷ روز', 'feedback' ),
 				array( 'citizen-reporter', 'شهروندخبرنگار', 'camera', 'online', 'فوری', 'request' ),
 				array( 'volunteers', 'ثبت‌نام داوطلبان طرح‌های محله‌ای', 'users', 'online', '۳ روز کاری', 'request' ),
+				array( 'mayor-visits-tracking', 'بازدیدهای شهردار و پیگیری دستورها', 'eye', 'online', 'فوری', 'visits', true, 'بازدید شهردار' ),
+				array( 'staff-complaint', 'شکایت از عملکرد کارکنان (بازرسی)', 'shield', 'online', 'پاسخ ظرف ۱۰ روز', 'complaint' ),
 			) ),
 			array( 'فرهنگ و گردشگری', 'culture', 'badgir', array(
 				array( 'events-calendar', 'تقویم رویدادهای شهر', 'calendar', 'online', 'فوری' ),
@@ -434,6 +437,7 @@ final class BMN_Demo {
 			'address'    => 'بشرویه، خیابان امام، ساختمان شهرداری',
 		);
 		update_option( 'bmn_settings', $settings );
+		$n += (int) apply_filters( 'bmn_demo_extra', 0 );
 		flush_rewrite_rules();
 		return $n;
 	}

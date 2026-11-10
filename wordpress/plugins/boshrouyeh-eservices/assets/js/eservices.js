@@ -164,12 +164,13 @@
 				top.appendChild( el( 'span', 'kh-chip', d.status_label ) );
 				card.appendChild( top );
 				card.appendChild( el( 'p', 'kh-help', fa( d.tracking ) + ' | ' + d.created_fa ) );
+				if ( d.unit ) { card.appendChild( el( 'p', 'bmn-track-unit', 'واحد رسیدگی‌کننده: ' + d.unit ) ); }
 				var bar = el( 'div', 'bmn-progress' );
 				for ( var i = 1; i <= 4; i++ ) { bar.appendChild( el( 'span', i <= d.progress ? 'on' : '' ) ); }
 				card.appendChild( bar );
 				var ol = el( 'ol', 'bmn-timeline' );
 				d.timeline.slice().reverse().forEach( function ( t ) {
-					var li = el( 'li' );
+					var li = el( 'li', t.kind === 'referral' ? 'is-referral' : '' );
 					li.appendChild( el( 'strong', '', t.status_label ) );
 					li.appendChild( el( 'small', '', t.date_fa ) );
 					if ( t.note ) { li.appendChild( el( 'p', '', t.note ) ); }

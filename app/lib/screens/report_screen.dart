@@ -51,6 +51,7 @@ class _ReportScreenState extends State<ReportScreen> {
   bool _busy = false;
   String? _error;
   String? _tracking;
+  String _unit = '';
 
   bool get _is137 => widget.type == 'report137';
 
@@ -122,7 +123,10 @@ class _ReportScreenState extends State<ReportScreen> {
     try {
       final api = context.read<Api>();
       final d = Map<String, dynamic>.from(await api.multipart('requests', fields, file: _photo) as Map);
-      setState(() => _tracking = d['tracking'] as String?);
+      setState(() {
+        _tracking = d['tracking'] as String?;
+        _unit = (d['unit'] ?? '').toString();
+      });
     } on ApiException catch (e) {
       setState(() => _error = e.message);
     } finally {
@@ -142,6 +146,7 @@ class _ReportScreenState extends State<ReportScreen> {
   String get _title => switch (widget.type) {
         'appointment' => 'نوبت ملاقات با شهردار',
         'feedback' => 'انتقاد و پیشنهاد',
+        'complaint' => 'شکایت از عملکرد (بازرسی)',
         'request' => widget.title ?? 'ثبت درخواست',
         _ => 'گزارش به ۱۳۷',
       };
@@ -164,6 +169,11 @@ class _ReportScreenState extends State<ReportScreen> {
               const Text('کد پیگیری شما:'),
               SelectableText(faDigits(_tracking), style: const TextStyle(fontFamily: 'Lalezar', fontSize: 34, color: Brand.brick, letterSpacing: 2)),
               Text('کد پیگیری پیامک هم شد.', style: t.bodySmall),
+              if (_unit.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text('ارجاع به: $_unit', style: const TextStyle(fontWeight: FontWeight.w800, color: Brand.qanat)),
+                Text('وضعیت و ارجاع‌های بعدی را از «پیگیری درخواست» یا «پیشخوان من» ببینید.', textAlign: TextAlign.center, style: t.bodySmall),
+              ],
               const SizedBox(height: 18),
               OutlinedButton(onPressed: _reset, child: const Text('ثبت مورد جدید')),
             ]),

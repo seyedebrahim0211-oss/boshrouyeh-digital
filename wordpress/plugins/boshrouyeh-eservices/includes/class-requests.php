@@ -42,6 +42,7 @@ final class BMN_Requests {
 			'request'     => __( 'درخواست خدمت', 'boshrouyeh-eservices' ),
 			'appointment' => __( 'نوبت ملاقات', 'boshrouyeh-eservices' ),
 			'feedback'    => __( 'انتقاد و پیشنهاد', 'boshrouyeh-eservices' ),
+			'complaint'   => __( 'شکایت از عملکرد (بازرسی)', 'boshrouyeh-eservices' ),
 		);
 	}
 
@@ -323,6 +324,7 @@ final class BMN_Requests {
 				'id'       => $id,
 				'tracking' => $meta['tracking'],
 				'status'   => 'new',
+				'unit'     => class_exists( 'BMN_Staff' ) ? BMN_Staff::post_unit_name( $id ) : '',
 				'message'  => __( 'با موفقیت ثبت شد.', 'boshrouyeh-eservices' ),
 			),
 			201
@@ -427,9 +429,12 @@ final class BMN_Requests {
 			'progress'     => $st[ $status ][1],
 			'created_fa'   => bmn_jdate( 'j F Y', (int) get_post_timestamp( $p ) ),
 			'has_photo'    => (bool) get_post_meta( $p->ID, '_bmn_photo', true ),
+			'unit'         => class_exists( 'BMN_Staff' ) ? BMN_Staff::post_unit_name( $p->ID ) : '',
 			'timeline'     => array_map(
 				fn( $e ) => array(
-					'status_label' => $st[ $e['s'] ][0] ?? '',
+					'kind'         => empty( $e['u'] ) ? 'status' : 'referral',
+					'status_label' => empty( $e['u'] ) ? ( $st[ $e['s'] ][0] ?? '' ) : sprintf( /* translators: %s: unit. */ __( 'ارجاع به %s', 'boshrouyeh-eservices' ), $e['u'] ),
+					'unit'         => (string) ( $e['u'] ?? '' ),
 					'note'         => (string) $e['n'],
 					'date_fa'      => bmn_jdate( 'j F Y - H:i', (int) $e['t'] ),
 				),
@@ -684,6 +689,20 @@ final class BMN_Requests {
 			$src = wp_nonce_url( admin_url( 'admin-post.php?action=bmn_request_photo&id=' . $p->ID ), 'bmn_photo_' . $p->ID );
 			printf( '<tr><th>%1$s</th><td><a href="%2$s" target="_blank"><img src="%2$s" alt="" style="max-width:360px;border-radius:8px"></a></td></tr>', esc_html__( 'تصویر', 'boshrouyeh-eservices' ), esc_url( $src ) );
 		}
+		if ( class_exists( 'BMN_Staff' ) ) {
+			$cur_unit = BMN_Staff::post_unit( $p->ID );
+			echo '<tr><th>' . esc_html__( 'واحد مسئول', 'boshrouyeh-eservices' ) . '</th><td>';
+			if ( current_user_can( 'bmn_refer' ) ) {
+				echo '<select name="bmn_unit"><option value="0">—</option>';
+				foreach ( BMN_Staff::units() as $uid_ => $uname ) {
+					printf( '<option value="%d" %s>%s</option>', (int) $uid_, selected( $cur_unit, $uid_, false ), esc_html( $uname ) );
+				}
+				echo '</select> <span class="description">' . esc_html__( 'تغییر واحد = ارجاع؛ شهروند در پیگیری می‌بیند به کدام واحد ارجاع شده است.', 'boshrouyeh-eservices' ) . '</span>';
+			} else {
+				echo esc_html( $d['unit'] ? $d['unit'] : '—' );
+			}
+			echo '</td></tr>';
+		}
 		echo '<tr><th>' . esc_html__( 'تغییر وضعیت', 'boshrouyeh-eservices' ) . '</th><td><select name="bmn_status">';
 		foreach ( self::statuses() as $k => $v ) {
 			printf( '<option value="%s" %s>%s</option>', esc_attr( $k ), selected( $d['status'], $k, false ), esc_html( $v[0] ) );
@@ -692,7 +711,7 @@ final class BMN_Requests {
 		echo '<tr><th>' . esc_html__( 'یادداشت برای شهروند', 'boshrouyeh-eservices' ) . '</th><td><textarea name="bmn_note" rows="3" class="large-text" maxlength="500"></textarea></td></tr>';
 		echo '</tbody></table><h4>' . esc_html__( 'سابقه', 'boshrouyeh-eservices' ) . '</h4><ol>';
 		foreach ( $d['timeline'] as $e ) {
-			printf( '<li><strong>%s</strong> — %s %s</li>', esc_html( $e['status_label'] ), esc_html( $e['date_fa'] ), $e['note'] ? '<br>' . esc_html( $e['note'] ) : '' );
+			echo '<li><strong>' . esc_html( $e['status_label'] ) . '</strong> — ' . esc_html( $e['date_fa'] ) . ( $e['note'] ? '<br>' . esc_html( $e['note'] ) : '' ) . '</li>';
 		}
 		echo '</ol>';
 	}
@@ -710,6 +729,17 @@ final class BMN_Requests {
 		$new  = isset( $_POST['bmn_status'] ) ? sanitize_key( wp_unslash( $_POST['bmn_status'] ) ) : '';
 		$note = isset( $_POST['bmn_note'] ) ? sanitize_textarea_field( wp_unslash( $_POST['bmn_note'] ) ) : '';
 		$old  = (string) get_post_meta( $id, '_bmn_status', true );
+		$unit = isset( $_POST['bmn_unit'] ) ? absint( $_POST['bmn_unit'] ) : 0;
+		if ( $unit && class_exists( 'BMN_Staff' ) && current_user_can( 'bmn_refer' ) && BMN_Staff::refer( $id, $unit, $new === $old ? $note : '' ) ) {
+			$phone = (string) get_post_meta( $id, '_bmn_phone', true );
+			if ( $phone && ! empty( $_POST['bmn_sms'] ) ) {
+				/* translators: 1: tracking, 2: unit. */
+				BMN_SMS::send( $phone, sprintf( __( 'شهرداری بشرویه: درخواست %1$s به «%2$s» ارجاع شد.', 'boshrouyeh-eservices' ), get_post_meta( $id, '_bmn_tracking', true ), BMN_Staff::post_unit_name( $id ) ) );
+			}
+			if ( $new === $old ) {
+				$note = '';
+			}
+		}
 		if ( ! array_key_exists( $new, self::statuses() ) || ( $new === $old && '' === $note ) ) {
 			return;
 		}

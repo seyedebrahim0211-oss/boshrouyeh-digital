@@ -80,6 +80,30 @@ fs.mkdirSync( OUT, { recursive: true } );
 		await page.click( '[data-bmn-track] button[type=submit]' );
 		await page.waitForSelector( '.bmn-track-card' );
 	} );
+	await step( 'tracking shows responsible unit', async () => {
+		if ( ! ( await page.textContent( '.bmn-track-card' ) ).includes( 'واحد رسیدگی‌کننده' ) ) { throw new Error( 'unit missing' ); }
+	} );
+	await step( 'mayor visit dossier (6 fields)', async () => {
+		await page.goto( BASE + '/mayor-visits/' );
+		await page.click( 'main a[href*="/mayor-visits/sample-visit"]' );
+		await page.waitForSelector( '.bmn-ord' );
+		const txt = await page.textContent( '.bmn-ords' );
+		for ( const f of [ 'مسئلهٔ دقیق', 'دستور مشخص', 'واحد مسئول', 'مهلت اجرا', 'منبع اعتبار', 'وضعیت فعلی' ] ) {
+			if ( ! txt.includes( f ) ) { throw new Error( 'missing ' + f ); }
+		}
+		await page.screenshot( { path: OUT + '/visit-dossier.png', fullPage: true } );
+	} );
+	await step( 'directives board + code lookup', async () => {
+		await page.goto( BASE + '/directives/?vc=405101' );
+		await page.waitForSelector( '.bmn-ord-stats' );
+		if ( ( await page.$$( '.bmn-ord' ) ).length !== 1 ) { throw new Error( 'code lookup should return 1' ); }
+	} );
+	await step( 'minibus live map', async () => {
+		await page.goto( BASE + '/minibus/' );
+		await page.waitForSelector( '.bmn-fleet__route h3', { timeout: 15000 } );
+		await page.waitForSelector( '.leaflet-container' );
+		await page.screenshot( { path: OUT + '/minibus.png' } );
+	} );
 	await step( 'mobile home', async () => {
 		const m = await browser.newPage( { viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 } );
 		await m.goto( BASE + '/' );

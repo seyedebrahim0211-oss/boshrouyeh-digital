@@ -11,6 +11,9 @@ import '../theme/brand.dart';
 import '../widgets/brand_widgets.dart';
 import '../widgets/k_icon.dart';
 import 'content_screen.dart';
+import 'fleet_screen.dart';
+import 'track_screen.dart';
+import 'visits_screen.dart';
 import 'neighborhood_screen.dart';
 import 'service_detail_screen.dart';
 
@@ -71,6 +74,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (snap.connectionState == ConnectionState.waiting && data == null) const StateView.loading(),
                   if (snap.hasError && data == null) StateView.error(snap.error.toString(), onRetry: _refresh),
                   if (services.isNotEmpty) _ServiceGrid(services: services.take(5).toList(), onMore: () => widget.onNavigate(1)),
+                  const SizedBox(height: 12),
+                  const _CityShortcuts(),
                   if (notices.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     _NoticeCard(post: notices.firstWhere((n) => n.urgent, orElse: () => notices.first)),
@@ -115,6 +120,36 @@ class _HeroCard extends StatelessWidget {
         ),
       ]),
     );
+  }
+}
+
+/// شهر من: بازدید شهردار، مینی‌بوس آنلاین، پیگیری درخواست.
+class _CityShortcuts extends StatelessWidget {
+  const _CityShortcuts();
+  @override
+  Widget build(BuildContext context) {
+    Widget item(String icon, String title, String sub, Widget page) => Expanded(
+          child: Card(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(Brand.radiusCard),
+              onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => page)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                child: Column(children: [
+                  KIcon(icon, size: 26, color: Brand.qanat),
+                  const SizedBox(height: 6),
+                  Text(title, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12.5)),
+                  Text(sub, textAlign: TextAlign.center, style: const TextStyle(fontSize: 10.5, color: Brand.muted)),
+                ]),
+              ),
+            ),
+          ),
+        );
+    return Row(children: [
+      item('eye', 'بازدید شهردار', 'دستورها و پیگیری', const VisitsScreen()),
+      item('bus', 'مینی‌بوس آنلاین', 'کجاست؟ کی می‌رسد؟', const FleetScreen()),
+      item('search', 'پیگیری درخواست', 'به کدام واحد رفت؟', const TrackScreen()),
+    ]);
   }
 }
 

@@ -168,7 +168,9 @@ final class BMN_ES_Admin {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- prepared above.
 		$rows = $wpdb->get_results( $sql );
 		echo '<div class="wrap"><h1 class="wp-heading-inline">' . esc_html__( 'پرداخت‌ها', 'boshrouyeh-eservices' ) . '</h1> ';
-		echo '<a class="page-title-action" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=bmn_payments_csv' ), 'bmn_csv' ) ) . '">CSV</a>';
+		if ( current_user_can( 'bmn_export_payments' ) || current_user_can( 'manage_options' ) ) {
+			echo '<a class="page-title-action" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=bmn_payments_csv' ), 'bmn_csv' ) ) . '">CSV</a>';
+		}
 		echo '<ul class="subsubsub">';
 		foreach ( array( '' => 'همه', 'paid' => 'موفق', 'failed' => 'ناموفق', 'pending' => 'در انتظار' ) as $k => $l ) {
 			echo '<li><a href="' . esc_url( add_query_arg( 'status', $k, admin_url( 'admin.php?page=bmn-payments' ) ) ) . '"' . ( $status === $k ? ' class="current"' : '' ) . '>' . esc_html( $l ) . '</a> | </li>';
@@ -186,10 +188,13 @@ final class BMN_ES_Admin {
 	 */
 	public static function csv() {
 		global $wpdb;
-		if ( ! current_user_can( 'bmn_view_payments' ) ) {
+		if ( ! current_user_can( 'bmn_export_payments' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_die( '', 403 );
 		}
 		check_admin_referer( 'bmn_csv' );
+		if ( class_exists( 'BMN_Staff' ) ) {
+			BMN_Staff::log( 'payments.csv', 0, 'export' );
+		}
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT id, title, ref, amount, status, gateway, bank_ref, phone, created_at, paid_at FROM %i ORDER BY id DESC', BMN_Payments::table() ), ARRAY_A );
 		header( 'Content-Type: text/csv; charset=utf-8' );
