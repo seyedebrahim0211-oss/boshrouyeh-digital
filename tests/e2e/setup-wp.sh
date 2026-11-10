@@ -35,4 +35,6 @@ $WP theme activate boshrouyeh-khesht --quiet
 $WP plugin activate boshrouyeh-core boshrouyeh-eservices khesht-builder --quiet
 $WP bmn demo
 $WP rewrite flush --quiet
+# Setup runs under CLI (no HTTP_HOST); start the log clean so only request-time errors are checked.
+rm -f "$DIR/site/wp-content/debug.log"
 echo "WordPress ready in $DIR/site — start with: php -S localhost:$PORT -t $DIR/site $ROOT/tests/e2e/router.php"
