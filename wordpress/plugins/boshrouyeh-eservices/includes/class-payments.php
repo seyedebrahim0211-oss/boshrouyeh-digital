@@ -120,8 +120,8 @@ final class BMN_Payments {
 		if ( ! preg_match( '/^[a-f0-9]{32}$/', (string) $token ) ) {
 			return null;
 		}
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		return $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . self::table() . ' WHERE token = %s', $token ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		return $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE token = %s', self::table(), $token ) );
 	}
 
 	/**
@@ -383,8 +383,8 @@ final class BMN_Payments {
 	 */
 	public static function mine() {
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM ' . self::table() . " WHERE user_id = %d AND status <> 'pending' ORDER BY id DESC LIMIT 50", get_current_user_id() ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$rows = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM %i WHERE user_id = %d AND status <> 'pending' ORDER BY id DESC LIMIT 50", self::table(), get_current_user_id() ) );
 		return rest_ensure_response( array_map( array( __CLASS__, 'dto' ), (array) $rows ) );
 	}
 
@@ -410,8 +410,8 @@ final class BMN_Payments {
 	 */
 	public static function count_for_user( $uid ) {
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . self::table() . " WHERE user_id = %d AND status = 'paid'", $uid ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE user_id = %d AND status = 'paid'", self::table(), $uid ) );
 	}
 
 	/**

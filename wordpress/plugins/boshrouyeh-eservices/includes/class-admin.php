@@ -162,9 +162,11 @@ final class BMN_ES_Admin {
 		}
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only filter.
 		$status = isset( $_GET['status'] ) ? sanitize_key( $_GET['status'] ) : '';
-		$where  = $status ? $wpdb->prepare( 'WHERE status = %s', $status ) : '';
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared
-		$rows = $wpdb->get_results( 'SELECT * FROM ' . BMN_Payments::table() . " {$where} ORDER BY id DESC LIMIT 200" );
+		$sql    = $status
+			? $wpdb->prepare( 'SELECT * FROM %i WHERE status = %s ORDER BY id DESC LIMIT 200', BMN_Payments::table(), $status )
+			: $wpdb->prepare( 'SELECT * FROM %i ORDER BY id DESC LIMIT 200', BMN_Payments::table() );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- prepared above.
+		$rows = $wpdb->get_results( $sql );
 		echo '<div class="wrap"><h1 class="wp-heading-inline">' . esc_html__( 'پرداخت‌ها', 'boshrouyeh-eservices' ) . '</h1> ';
 		echo '<a class="page-title-action" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=bmn_payments_csv' ), 'bmn_csv' ) ) . '">CSV</a>';
 		echo '<ul class="subsubsub">';
@@ -188,8 +190,8 @@ final class BMN_ES_Admin {
 			wp_die( '', 403 );
 		}
 		check_admin_referer( 'bmn_csv' );
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$rows = $wpdb->get_results( 'SELECT id, title, ref, amount, status, gateway, bank_ref, phone, created_at, paid_at FROM ' . BMN_Payments::table() . ' ORDER BY id DESC', ARRAY_A );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT id, title, ref, amount, status, gateway, bank_ref, phone, created_at, paid_at FROM %i ORDER BY id DESC', BMN_Payments::table() ), ARRAY_A );
 		header( 'Content-Type: text/csv; charset=utf-8' );
 		header( 'Content-Disposition: attachment; filename=payments-' . gmdate( 'Ymd' ) . '.csv' );
 		$out = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
@@ -237,8 +239,8 @@ final class BMN_ES_Admin {
 						++$fast;
 					}
 				}
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				$pay = $wpdb->get_row( $wpdb->prepare( 'SELECT COUNT(*) c, COALESCE(SUM(amount),0) s FROM ' . BMN_Payments::table() . " WHERE status='paid' AND paid_at >= %s", $since ) );
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+				$pay = $wpdb->get_row( $wpdb->prepare( "SELECT COUNT(*) c, COALESCE(SUM(amount),0) s FROM %i WHERE status='paid' AND paid_at >= %s", BMN_Payments::table(), $since ) );
 				$rows = array(
 					__( 'گزارش‌های ۱۳۷', 'boshrouyeh-eservices' )                  => bmn_fa_digits( $total ),
 					__( 'باز (در جریان)', 'boshrouyeh-eservices' )                => bmn_fa_digits( $open ),

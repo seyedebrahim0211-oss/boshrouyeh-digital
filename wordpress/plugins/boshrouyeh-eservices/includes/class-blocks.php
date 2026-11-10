@@ -119,7 +119,9 @@ final class BMN_ES_Blocks {
 					'sending'   => __( 'در حال ارسال…', 'boshrouyeh-eservices' ),
 					'error'     => __( 'خطا در ارتباط؛ دوباره تلاش کنید.', 'boshrouyeh-eservices' ),
 					'resend'    => __( 'ارسال دوباره کد', 'boshrouyeh-eservices' ),
+					/* translators: %s: seconds left. */
 					'resendIn'  => __( 'ارسال دوباره تا %s ثانیه', 'boshrouyeh-eservices' ),
+					/* translators: %s: mobile number. */
 					'codeSent'  => __( 'کد ۵ رقمی به %s پیامک شد.', 'boshrouyeh-eservices' ),
 					'devCode'   => __( 'کد آزمایشی (فقط محیط توسعه):', 'boshrouyeh-eservices' ),
 					'tracking'  => __( 'کد پیگیری شما:', 'boshrouyeh-eservices' ),
@@ -230,8 +232,8 @@ final class BMN_ES_Blocks {
 			)
 		);
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$pays  = (array) $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM ' . BMN_Payments::table() . " WHERE user_id = %d AND status <> 'pending' ORDER BY id DESC LIMIT 20", $uid ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$pays  = (array) $wpdb->get_results( $wpdb->prepare( "SELECT * FROM %i WHERE user_id = %d AND status <> 'pending' ORDER BY id DESC LIMIT 20", BMN_Payments::table(), $uid ) );
 		$n_req = count( array_filter( $reqs, fn( $p ) => 'report137' !== get_post_meta( $p->ID, '_bmn_type', true ) ) );
 		$n_rep = count( $reqs ) - $n_req;
 		$n_pay = count( array_filter( $pays, fn( $p ) => 'paid' === $p->status ) );
