@@ -82,6 +82,8 @@ jobs:
   flutter:
     name: Flutter app (analyze, test, build APK)
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     defaults:
       run:
         working-directory: app
@@ -98,12 +100,33 @@ jobs:
       - run: flutter --version
       - name: Generate platform projects
         run: ./tool/setup_platforms.sh
+      - name: Release signing (encrypted keystore + ANDROID_KEYSTORE_PASSWORD secret)
+        env:
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$KS_PASS" ]; then echo "No ANDROID_KEYSTORE_PASSWORD secret: debug-signed build, no release."; exit 0; fi
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in android-signing/upload.jks.enc -out android/app/upload.jks -pass env:KS_PASS
+          printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=boshrouyeh\nstoreFile=upload.jks\n' "$KS_PASS" "$KS_PASS" > android/key.properties
+          python3 tool/apply_signing.py
+          echo "SIGNED=1" >> "$GITHUB_ENV"
       - run: flutter pub get
       - run: flutter analyze --no-fatal-infos
       - run: flutter test
       - name: Build APK
-        run: flutter build apk --release --dart-define=API_BASE=https://boshrooyeh.ir/wp-json/bmn/v1/
+        run: |
+          VERSION="1.0.${{ github.run_number }}"
+          echo "APP_VERSION=$VERSION" >> "$GITHUB_ENV"
+          flutter build apk --release --build-name="$VERSION" --build-number=${{ github.run_number }} \
+            --dart-define=API_BASE=https://varsin-bsh.ir/wp-json/bmn/v1/ --dart-define=SITE_URL=https://varsin-bsh.ir
+          cp build/app/outputs/flutter-apk/app-release.apk build/boshrouyeh.apk
       - uses: actions/upload-artifact@v4
         with:
           name: boshrouyeh-man-apk
-          path: app/build/app/outputs/flutter-apk/app-release.apk
+          path: app/build/boshrouyeh.apk
+      - name: Publish GitHub Release (in-app updater reads this)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.SIGNED == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NOTES="$(git log -1 --pretty=%s)"
+          gh release create "v$APP_VERSION" build/boshrouyeh.apk --title "بشرویهٔ من $APP_VERSION" --notes "$NOTES" --latest

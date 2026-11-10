@@ -50,6 +50,10 @@ class Api {
     }
     if (r.statusCode >= 200 && r.statusCode < 300) return body;
     final map = body is Map<String, dynamic> ? body : null;
+    final code = map?['code'] as String?;
+    if (code == 'rest_no_route' || (body == null && r.statusCode == 404)) {
+      throw ApiException('این سرویس روی سرور در دسترس نیست؛ لطفاً اپ را بروزرسانی کنید یا بعداً تلاش کنید.', status: r.statusCode, data: map);
+    }
     throw ApiException((map?['message'] as String?) ?? 'خطای ارتباط (${r.statusCode})', status: r.statusCode, data: map);
   }
 

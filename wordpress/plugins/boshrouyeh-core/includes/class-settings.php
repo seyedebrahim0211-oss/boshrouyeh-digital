@@ -47,6 +47,12 @@ final class BMN_Settings {
 			'app_bazaar'     => array( __( 'اپ در کافه‌بازار', 'boshrouyeh-core' ), 'url', 'links' ),
 			'app_myket'      => array( __( 'اپ در مایکت', 'boshrouyeh-core' ), 'url', 'links' ),
 			'app_apk'        => array( __( 'دانلود مستقیم APK', 'boshrouyeh-core' ), 'url', 'links' ),
+			'app_latest'     => array( __( 'آخرین نسخهٔ اپ (خالی = خودکار از گیت‌هاب)', 'boshrouyeh-core' ), 'text', 'app' ),
+			'app_min'        => array( __( 'حداقل نسخهٔ مجاز (پایین‌تر = بروزرسانی اجباری)', 'boshrouyeh-core' ), 'text', 'app' ),
+			'app_notes'      => array( __( 'تغییرات نسخه (نمایش در اپ)', 'boshrouyeh-core' ), 'text', 'app' ),
+			'app_github'     => array( __( 'مخزن گیت‌هاب انتشار اپ (owner/repo)', 'boshrouyeh-core' ), 'text', 'app' ),
+			'news_feed'      => array( __( 'منبع خبر (RSS سایت رسمی)', 'boshrouyeh-core' ), 'url', 'news' ),
+			'news_auto'      => array( __( 'همگام‌سازی خودکار ساعتی اخبار', 'boshrouyeh-core' ), 'checkbox', 'news' ),
 			'page_dashboard' => array( __( 'برگهٔ پیشخوان شهروند', 'boshrouyeh-core' ), 'page', 'pages' ),
 			'page_137'       => array( __( 'برگهٔ سامانه ۱۳۷', 'boshrouyeh-core' ), 'page', 'pages' ),
 			'page_dues'      => array( __( 'برگهٔ پرداخت عوارض', 'boshrouyeh-core' ), 'page', 'pages' ),
@@ -89,6 +95,8 @@ final class BMN_Settings {
 			'contact' => __( 'اطلاعات تماس', 'boshrouyeh-core' ),
 			'links'   => __( 'شبکه‌های اجتماعی و اپ', 'boshrouyeh-core' ),
 			'pages'   => __( 'برگه‌های خدمات', 'boshrouyeh-core' ),
+			'app'     => __( 'بروزرسانی اپ موبایل', 'boshrouyeh-core' ),
+			'news'    => __( 'درون‌ریزی اخبار', 'boshrouyeh-core' ),
 		);
 		foreach ( $sections as $id => $title ) {
 			add_settings_section( 'bmn_' . $id, $title, '__return_false', 'bmn-settings' );
@@ -130,6 +138,9 @@ final class BMN_Settings {
 				case 'page':
 					$out[ $key ] = absint( $val );
 					break;
+				case 'checkbox':
+					$out[ $key ] = empty( $val ) ? '0' : '1';
+					break;
 				default:
 					$out[ $key ] = sanitize_text_field( (string) $val );
 			}
@@ -158,6 +169,11 @@ final class BMN_Settings {
 			);
 			return;
 		}
+		if ( 'checkbox' === $args['type'] ) {
+			$on = '0' !== (string) bmn_option( $key, '1' );
+			echo '<input type="hidden" name="' . esc_attr( $name ) . '" value="0"><label><input type="checkbox" id="' . esc_attr( 'bmn_' . $key ) . '" name="' . esc_attr( $name ) . '" value="1"' . ( $on ? ' checked' : '' ) . '> ' . esc_html__( 'فعال', 'boshrouyeh-core' ) . '</label>';
+			return;
+		}
 		$type = in_array( $args['type'], array( 'url', 'email' ), true ) ? $args['type'] : 'text';
 		printf( '<input class="regular-text" type="%s" id="%s" name="%s" value="%s">', esc_attr( $type ), esc_attr( 'bmn_' . $key ), esc_attr( $name ), esc_attr( (string) $val ) );
 	}
@@ -180,8 +196,32 @@ final class BMN_Settings {
 				?>
 			</form>
 			<hr>
+			<h2><?php esc_html_e( 'اخبار سایت رسمی', 'boshrouyeh-core' ); ?></h2>
+			<?php
+			$last = get_option( 'bmn_news_last' );
+			if ( is_array( $last ) && ! empty( $last['time'] ) ) {
+				echo '<p>' . esc_html(
+					sprintf(
+						/* translators: 1: date, 2: created count. */
+						__( 'آخرین همگام‌سازی: %1$s — %2$s خبر جدید', 'boshrouyeh-core' ),
+						wp_date( 'Y/m/d H:i', (int) $last['time'] ),
+						bmn_fa_digits( (int) ( $last['result']['created'] ?? 0 ) )
+					)
+				);
+				if ( ! empty( $last['result']['error'] ) ) {
+					echo ' <code>' . esc_html( $last['result']['error'] ) . '</code>';
+				}
+				echo '</p>';
+			}
+			?>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<?php wp_nonce_field( 'bmn_news_sync' ); ?>
+				<input type="hidden" name="action" value="bmn_news_sync">
+				<?php submit_button( __( 'دریافت اخبار همین الان', 'boshrouyeh-core' ), 'secondary' ); ?>
+			</form>
+			<hr>
 			<h2><?php esc_html_e( 'محتوای نمونه', 'boshrouyeh-core' ); ?></h2>
-			<p><?php esc_html_e( 'دسته‌ها، ۳۸ خدمت، جاذبه‌ها، برگه‌ها و نمونهٔ اطلاعیه/مناقصه را می‌سازد (فقط مواردی که وجود ندارند).', 'boshrouyeh-core' ); ?></p>
+			<p><?php esc_html_e( 'دسته‌ها، بیش از ۵۰ خدمت، جاذبه‌ها، برگه‌ها و نمونهٔ اطلاعیه/مناقصه را می‌سازد (فقط مواردی که وجود ندارند).', 'boshrouyeh-core' ); ?></p>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<?php wp_nonce_field( 'bmn_demo_import' ); ?>
 				<input type="hidden" name="action" value="bmn_demo_import">

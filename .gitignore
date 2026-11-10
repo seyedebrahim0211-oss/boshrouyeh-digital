@@ -16,3 +16,8 @@ node_modules/
 /.wp/
 /wordpress/wp-content/
 .env
+
+# Signing secrets (only the encrypted keystore is committed)
+*.jks
+*.keystore
+key.properties

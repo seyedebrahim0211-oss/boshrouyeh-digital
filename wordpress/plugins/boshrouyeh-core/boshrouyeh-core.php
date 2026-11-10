@@ -32,6 +32,8 @@ require_once BMN_CORE_DIR . 'includes/class-seo.php';
 require_once BMN_CORE_DIR . 'includes/class-security.php';
 require_once BMN_CORE_DIR . 'includes/class-pwa.php';
 require_once BMN_CORE_DIR . 'includes/class-demo.php';
+require_once BMN_CORE_DIR . 'includes/class-news-import.php';
+require_once BMN_CORE_DIR . 'includes/class-app-update.php';
 
 add_action( 'plugins_loaded', 'bmn_core_boot' );
 /**
@@ -49,6 +51,8 @@ function bmn_core_boot() {
 	BMN_Security::init();
 	BMN_PWA::init();
 	BMN_Demo::init();
+	BMN_News_Import::init();
+	BMN_App_Update::init();
 }
 
 register_activation_hook( __FILE__, 'bmn_core_activate' );
@@ -61,4 +65,11 @@ function bmn_core_activate() {
 	flush_rewrite_rules();
 }
 
-register_deactivation_hook( __FILE__, 'flush_rewrite_rules' );
+register_deactivation_hook( __FILE__, 'bmn_core_deactivate' );
+/**
+ * Deactivation: clear cron and rewrites.
+ */
+function bmn_core_deactivate() {
+	wp_clear_scheduled_hook( 'bmn_news_sync' );
+	flush_rewrite_rules();
+}

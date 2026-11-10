@@ -98,7 +98,7 @@ final class BMN_Demo {
 	public static function run() {
 		$n = 0;
 
-		// ---- Service catalogue (8 categories, 38 services) ----
+		// ---- Service catalogue (8 categories, 54 services) ----
 		$catalog = array(
 			array( 'شهرسازی و ساختمان', 'urban', 'building', array(
 				array( 'building-permit', 'صدور و تمدید پروانهٔ ساختمانی', 'permit', 'semi', '۷ تا ۱۵ روز کاری', '', true, 'پروانه ساختمان', 'https://eservices.mrud.ir' ),
@@ -107,6 +107,9 @@ final class BMN_Demo {
 				array( 'expert-visit', 'درخواست بازدید کارشناس', 'eye', 'online', '۵ روز کاری', 'request' ),
 				array( 'article-100', 'پیگیری پرونده کمیسیون مادهٔ ۱۰۰', 'tender', 'online', 'فوری', 'tracking' ),
 				array( 'historic-fabric-rules', 'ضوابط نما و ساخت در بافت تاریخی', 'badgir', 'online', 'فوری' ),
+				array( 'excavation-permit', 'مجوز حفاری و ترمیم نوار حفاری', 'permit', 'semi', '۳ روز کاری', 'request' ),
+				array( 'address-plaque', 'پلاک‌کوبی و استعلام نشانی', 'pin', 'online', '۵ روز کاری', 'request' ),
+				array( 'demolition-permit', 'مجوز تخریب و نوسازی', 'building', 'semi', '۷ روز کاری', 'request' ),
 			) ),
 			array( 'عوارض و پرداخت', 'dues', 'payment', array(
 				array( 'renovation-dues', 'عوارض نوسازی و سطح شهر', 'payment', 'online', 'کمتر از ۳ دقیقه', 'dues_renovation', true, 'پرداخت عوارض' ),
@@ -115,6 +118,7 @@ final class BMN_Demo {
 				array( 'clearance-installments', 'مفاصاحساب و تقسیط بدهی', 'doc-check', 'semi', '۵ روز کاری', 'request' ),
 				array( 'rent-bills', 'پرداخت قبوض و اجاره‌بها', 'ticket', 'online', 'فوری' ),
 				array( 'payment-receipt', 'استعلام و دریافت رسید', 'print', 'online', 'فوری', 'tracking' ),
+				array( 'signage-dues', 'عوارض تابلو و تبلیغات محیطی', 'star8', 'online', '۲ روز کاری', 'request' ),
 			) ),
 			array( 'خدمات شهری', 'city', '137', array(
 				array( 'report-137-service', 'سامانهٔ ۱۳۷ (گزارش با عکس و موقعیت)', '137', 'online', 'پاسخ کمتر از ۷۲ ساعت', 'report137', true, 'سامانه ۱۳۷' ),
@@ -123,12 +127,17 @@ final class BMN_Demo {
 				array( 'lighting-asphalt', 'روشنایی و آسفالت معابر', 'lamp', 'online', '۷۲ ساعت', 'report137' ),
 				array( 'green-space', 'فضای سبز و درخواست درخت', 'tree', 'online', '۷ روز کاری', 'request' ),
 				array( 'public-transport', 'حمل‌ونقل عمومی و تاکسی', 'bus', 'online', 'فوری' ),
+				array( 'water-tanker', 'درخواست تانکر آب‌رسانی', 'drop', 'online', '۲۴ ساعت', 'request' ),
+				array( 'qanat-report', 'گزارش خرابی قنات و مسیل', 'drop', 'online', '۷۲ ساعت', 'report137' ),
+				array( 'bulky-waste', 'جمع‌آوری اقلام حجیم و بازیافت', 'waste', 'online', '۲ روز کاری', 'request' ),
+				array( 'stray-animals', 'گزارش حیوانات بلاتکلیف', 'shield', 'online', '۴۸ ساعت', 'report137' ),
 			) ),
 			array( 'ایمنی و آتش‌نشانی', 'safety', 'fire', array(
 				array( 'emergency-125', 'تماس اضطراری ۱۲۵', 'phone', 'online', 'فوری' ),
 				array( 'safety-approval', 'استعلام و تأییدیهٔ ایمنی', 'shield', 'semi', '۵ روز کاری', 'request' ),
 				array( 'safety-inspection', 'درخواست بازدید ایمنی', 'fire', 'online', '۳ روز کاری', 'request' ),
 				array( 'safety-training', 'آموزش همگانی و مانور', 'users', 'onsite', 'طبق برنامه' ),
+				array( 'extinguisher-service', 'شارژ کپسول و تجهیزات آتش‌نشانی', 'fire', 'semi', '۳ روز کاری', 'request' ),
 			) ),
 			array( 'آرامستان', 'cemetery', 'cemetery', array(
 				array( 'deceased-search', 'جست‌وجوی متوفیان و مزار', 'search', 'online', 'فوری', 'deceased', true, 'آرامستان' ),
@@ -142,17 +151,22 @@ final class BMN_Demo {
 				array( 'mayor-appointment', 'نوبت ملاقات با شهردار', 'calendar', 'online', 'تأیید ظرف ۳ روز', 'appointment' ),
 				array( 'feedback', 'نظرسنجی و انتقاد و پیشنهاد', 'chat', 'online', 'پاسخ ظرف ۷ روز', 'feedback' ),
 				array( 'citizen-reporter', 'شهروندخبرنگار', 'camera', 'online', 'فوری', 'request' ),
+				array( 'volunteers', 'ثبت‌نام داوطلبان طرح‌های محله‌ای', 'users', 'online', '۳ روز کاری', 'request' ),
 			) ),
 			array( 'فرهنگ و گردشگری', 'culture', 'badgir', array(
 				array( 'events-calendar', 'تقویم رویدادهای شهر', 'calendar', 'online', 'فوری' ),
 				array( 'venue-booking', 'رزرو سالن، فضا و غرفه', 'building', 'semi', '۳ روز کاری', 'request' ),
 				array( 'attractions-guide', 'راهنمای جاذبه‌ها و مسیرها', 'route', 'online', 'فوری' ),
 				array( 'eco-lodges', 'معرفی اقامتگاه‌های بومگردی', 'home', 'online', 'فوری' ),
+				array( 'sports-booking', 'رزرو سالن و زمین ورزشی', 'calendar', 'online', '۲ روز کاری', 'request' ),
+				array( 'library-membership', 'عضویت کتابخانه و فرهنگسرا', 'users', 'semi', 'همان روز', 'request' ),
 			) ),
 			array( 'کسب‌وکار و اشتغال', 'business', 'store', array(
 				array( 'careers', 'فراخوان‌های استخدام و همکاری', 'briefcase', 'online', 'طبق فراخوان' ),
 				array( 'seasonal-bazaar', 'ثبت‌نام بازارچه‌های فصلی', 'store', 'online', '۵ روز کاری', 'request' ),
 				array( 'booth-rental', 'اجارهٔ اماکن و غرفه‌های شهرداری', 'ticket', 'semi', 'طبق مزایده', 'request' ),
+				array( 'taxi-license', 'صدور و تمدید پروانهٔ تاکسیرانی', 'car', 'semi', '۷ روز کاری', 'request' ),
+				array( 'vendor-registration', 'ثبت‌نام پیمانکاران و تأمین‌کنندگان', 'briefcase', 'online', '۵ روز کاری', 'request' ),
 			) ),
 		);
 

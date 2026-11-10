@@ -6,6 +6,7 @@ import '../core/api.dart';
 import '../core/auth_store.dart';
 import '../core/format.dart';
 import '../core/settings.dart';
+import '../core/updater.dart';
 import '../models/models.dart';
 import '../theme/brand.dart';
 import '../widgets/brand_widgets.dart';
@@ -155,6 +156,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
               settings.setTheme(s.first);
               Navigator.pop(c);
             },
+          ),
+          const SizedBox(height: 12),
+          FutureBuilder<String>(
+            future: Updater.currentVersion(),
+            builder: (_, v) => ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const KIcon('download'),
+              title: const Text('بررسی بروزرسانی'),
+              subtitle: Text('نسخهٔ نصب‌شده: ${faDigits(v.data ?? '…')}'),
+              onTap: () {
+                final api = context.read<Api>();
+                Navigator.pop(c);
+                Updater.checkManually(context, api);
+              },
+            ),
           ),
           if (auth.isLoggedIn) ...[
             const SizedBox(height: 16),

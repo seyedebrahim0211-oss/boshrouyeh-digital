@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../core/api.dart';
+import '../core/updater.dart';
 
 import '../theme/brand.dart';
 import '../widgets/brand_widgets.dart';
@@ -19,6 +23,14 @@ class Shell extends StatefulWidget {
 class ShellState extends State<Shell> {
   int index = 0;
   void go(int i) => setState(() => index = i);
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) Updater.checkOnStart(context, context.read<Api>());
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
