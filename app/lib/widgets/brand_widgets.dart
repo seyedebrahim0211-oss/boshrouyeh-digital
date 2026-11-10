@@ -193,7 +193,7 @@ class StateView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Taqche(icon: icon ?? 'info', size: 56),
+            if (icon == 'star8') Opacity(opacity: .55, child: BrandLogo(size: 76)) else Taqche(icon: icon ?? 'info', size: 56),
             const SizedBox(height: 12),
             Text(message!, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium),
             if (onRetry != null) ...[
@@ -209,4 +209,44 @@ class StateView extends StatelessWidget {
 
 void showMsg(BuildContext context, String msg) {
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+}
+
+/// Municipality vector logo (from the brand vector, tinted per surface).
+class BrandLogo extends StatelessWidget {
+  const BrandLogo({super.key, this.size = 72, this.color});
+  final double size;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return SvgPicture.asset(
+      'assets/images/logo-brick.svg',
+      width: size,
+      height: size,
+      colorFilter: ColorFilter.mode(color ?? (dark ? Brand.kahgel : Brand.brick), BlendMode.srcIn),
+      semanticsLabel: 'نشان شهرداری بشرویه',
+    );
+  }
+}
+
+/// Logo inside a soft circular plate.
+class LogoBadge extends StatelessWidget {
+  const LogoBadge({super.key, this.size = 96});
+  final double size;
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: size,
+      height: size,
+      padding: EdgeInsets.all(size * .12),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: dark ? const Color(0xFF2A3756) : Colors.white,
+        border: Border.all(color: Brand.kahgel, width: size * .05),
+      ),
+      child: BrandLogo(size: size * .7),
+    );
+  }
 }

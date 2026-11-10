@@ -28,3 +28,4 @@ body.kb-canvas { min-height: 100vh; }
 .kb-canvas-empty { text-align: center; padding: 80px 20px 10px; color: #6B5A4E; font-family: Vazirmatn, Tahoma, sans-serif; }
 .kb-canvas-empty h2 { font: 400 32px Lalezar, Vazirmatn; color: #6E3B23; margin: 0 0 8px; }
 .kb-missing { padding: 18px; border-radius: 12px; background: #FBF0D9; color: #6A4A0F; font-size: 14px; text-align: center; }
+.kb-canvas-empty__logo { display: block; margin: 0 auto 14px; opacity: .9; }

@@ -27,4 +27,11 @@ add_plist NSPhotoLibraryUsageDescription "برای انتخاب عکس گزار�
 add_plist NSLocationWhenInUseUsageDescription "برای ثبت موقعیت گزارش ۱۳۷ و مسیریابی جاذبه‌ها"
 sed -i 's#<string>Boshrouyeh Man</string>#<string>بشرویهٔ من</string>#' "$PLIST" || true
 
+# Launcher icons from the municipality logo.
+for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+  cp "assets/launcher/mipmap-$d/ic_launcher.png" "android/app/src/main/res/mipmap-$d/ic_launcher.png"
+done
+if [ -d ios/Runner/Assets.xcassets/AppIcon.appiconset ]; then
+  cp assets/launcher/ios/Icon-App-1024x1024@1x.png ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png
+fi
 echo "Platforms ready."

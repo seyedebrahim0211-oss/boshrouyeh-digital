@@ -339,6 +339,7 @@
 			if ( ! S.layout.sections.length ) {
 				root.textContent = '';
 				var empty = doc.createElement( 'div' ); empty.className = 'kb-canvas-empty'; empty.setAttribute( 'data-kb-ui', '1' );
+				var lg = doc.createElement( 'img' ); lg.src = K.logo; lg.alt = ''; lg.width = 110; lg.height = 110; lg.className = 'kb-canvas-empty__logo'; empty.appendChild( lg );
 				var t1 = doc.createElement( 'h2' ); t1.textContent = 'برگهٔ خود را بسازید'; empty.appendChild( t1 );
 				var t2 = doc.createElement( 'p' ); t2.textContent = 'یک قالب آماده انتخاب کنید یا بخش جدید بیفزایید و ویجت‌ها را از پنل کنار بکشید.'; empty.appendChild( t2 );
 				root.appendChild( empty ); root.appendChild( canvasAddBar() );

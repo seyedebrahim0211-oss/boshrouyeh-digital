@@ -1,3 +1,5 @@
+/* Respect the hidden attribute even on grid/flex components. */
+.bmn-es [hidden], .bmn-block [hidden], .kb-page [hidden] { display: none !important; }
 /* Boshrouyeh Core — component styles. Uses Khesht tokens with fallbacks so blocks work under any theme. */
 .bmn-block { --_s: var(--kh-surface, #fff); --_l: var(--kh-line, #EADBC4); --_m: var(--kh-muted, #6B5A4E); --_q: var(--kh-qanat, #16737A); --_t: var(--kh-tint, #F3E6D2); --_b: var(--kh-brick, #6E3B23); --_n: var(--kh-night, #1F2A44); --_h: var(--kh-heading-2, #1F2A44); }
 .bmn-block .kh-taqche--lg { width: 72px; height: 80px; }

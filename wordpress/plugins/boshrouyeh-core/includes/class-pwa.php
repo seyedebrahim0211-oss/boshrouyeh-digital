@@ -54,7 +54,8 @@ final class BMN_PWA {
 		echo '<meta name="mobile-web-app-capable" content="yes">' . "\n";
 		echo '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">' . "\n";
 		if ( ! has_site_icon() ) {
-			printf( '<link rel="icon" href="%s" type="image/png">' . "\n", esc_url( BMN_CORE_URL . 'assets/img/favicon-64.png' ) );
+			printf( '<link rel="icon" href="%s" type="image/svg+xml">' . "\n", esc_url( BMN_CORE_URL . 'assets/img/logo-brick.svg' ) );
+			printf( '<link rel="alternate icon" href="%s" type="image/png">' . "\n", esc_url( BMN_CORE_URL . 'assets/img/favicon-64.png' ) );
 		}
 	}
 
@@ -159,6 +160,16 @@ self.addEventListener('fetch', (e) => {
 	}
 
 	/**
+	 * Inline municipality logo (currentColor).
+	 *
+	 * @return string
+	 */
+	public static function logo_svg() {
+		$svg = (string) file_get_contents( BMN_CORE_DIR . 'assets/img/logo.svg' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- local plugin file.
+		return str_starts_with( ltrim( $svg ), '<svg' ) ? $svg : '';
+	}
+
+	/**
 	 * Offline page (static, self-contained).
 	 */
 	private static function offline() {
@@ -168,8 +179,8 @@ self.addEventListener('fetch', (e) => {
 <!doctype html>
 <html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title><?php esc_html_e( 'اتصال برقرار نیست', 'boshrouyeh-core' ); ?></title>
-<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#1F2A44;color:#F6EEE1;font-family:Vazirmatn,Tahoma,sans-serif;text-align:center;padding:24px}h1{color:#D9A441;font-size:1.6rem}a{display:inline-block;margin-top:16px;background:#16737A;color:#fff;padding:12px 24px;border-radius:10px;text-decoration:none}</style>
-</head><body><main><h1><?php esc_html_e( 'اتصال اینترنت برقرار نیست', 'boshrouyeh-core' ); ?></h1><p><?php esc_html_e( 'پس از برقراری اتصال دوباره تلاش کنید. شماره‌های اضطراری: آتش‌نشانی ۱۲۵ · سامانه ۱۳۷', 'boshrouyeh-core' ); ?></p><a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'تلاش دوباره', 'boshrouyeh-core' ); ?></a></main></body></html>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#1F2A44;color:#F6EEE1;font-family:Vazirmatn,Tahoma,sans-serif;text-align:center;padding:24px}h1{color:#D9A441;font-size:1.6rem}a{display:inline-block;margin-top:16px;background:#16737A;color:#fff;padding:12px 24px;border-radius:10px;text-decoration:none}.logo{color:#E2C9A3;width:120px;height:120px;margin:0 auto 12px}.logo svg{width:100%;height:100%}</style>
+</head><body><main><div class="logo"><?php echo self::logo_svg(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static plugin SVG. ?></div><h1><?php esc_html_e( 'اتصال اینترنت برقرار نیست', 'boshrouyeh-core' ); ?></h1><p><?php esc_html_e( 'پس از برقراری اتصال دوباره تلاش کنید. شماره‌های اضطراری: آتش‌نشانی ۱۲۵ · سامانه ۱۳۷', 'boshrouyeh-core' ); ?></p><a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'تلاش دوباره', 'boshrouyeh-core' ); ?></a></main></body></html>
 		<?php
 	}
 }

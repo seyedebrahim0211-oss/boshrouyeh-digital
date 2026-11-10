@@ -174,11 +174,24 @@ final class BMN_ES_Blocks {
 		$uid = wp_unique_id( 'bmn-login-' );
 		$intro = $intro ? $intro : __( 'بدون رمز عبور؛ فقط شمارهٔ همراه و کد پیامکی.', 'boshrouyeh-eservices' );
 		return '<div class="bmn-login kh-panel" data-bmn-login>'
-			. '<div class="bmn-login__head"><span class="kh-taqche kh-taqche--action">' . bmn_icon( 'user' ) . '</span><div><h2>' . esc_html__( 'ورود شهروند', 'boshrouyeh-eservices' ) . '</h2><p class="kh-help">' . esc_html( $intro ) . '</p></div></div>'
+			. '<div class="bmn-login__head"><span class="bmn-login__logo">' . self::logo( 58 ) . '</span><div><h2>' . esc_html__( 'ورود شهروند', 'boshrouyeh-eservices' ) . '</h2><p class="kh-help">' . esc_html( $intro ) . '</p></div></div>'
 			. '<form class="kh-form" data-step="phone" novalidate><div class="kh-field"><label for="' . esc_attr( $uid ) . '-p">' . esc_html__( 'شمارهٔ همراه', 'boshrouyeh-eservices' ) . '</label><input class="kh-input kh-ltr" id="' . esc_attr( $uid ) . '-p" name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="09xx xxx xxxx" maxlength="14" required></div><button class="kh-btn kh-btn--action kh-btn--block" type="submit">' . esc_html__( 'دریافت کد', 'boshrouyeh-eservices' ) . '</button></form>'
 			. '<form class="kh-form" data-step="code" hidden novalidate><p class="kh-alert kh-alert--info" data-msg></p><div class="kh-field"><label for="' . esc_attr( $uid ) . '-c">' . esc_html__( 'کد تأیید', 'boshrouyeh-eservices' ) . '</label><input class="kh-input kh-ltr bmn-code" id="' . esc_attr( $uid ) . '-c" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9۰-۹]{5}" maxlength="5" required></div><button class="kh-btn kh-btn--action kh-btn--block" type="submit">' . esc_html__( 'ورود', 'boshrouyeh-eservices' ) . '</button><p class="bmn-login__alt"><button type="button" class="bmn-link" data-resend disabled></button> · <button type="button" class="bmn-link" data-edit>' . esc_html__( 'ویرایش شماره', 'boshrouyeh-eservices' ) . '</button></p></form>'
 			. '<p class="bmn-err" role="alert" aria-live="assertive"></p>'
 			. '<p class="kh-help bmn-login__legal">' . esc_html__( 'با ورود، شرایط استفاده و حریم خصوصی را می‌پذیرید. شماره شما فقط برای خدمات شهرداری استفاده می‌شود.', 'boshrouyeh-eservices' ) . '</p></div>';
+	}
+
+	/**
+	 * Municipality vector logo (theme copy preferred, core copy as fallback).
+	 *
+	 * @param int $size Size.
+	 * @return string
+	 */
+	public static function logo( $size = 56 ) {
+		if ( function_exists( 'khesht_logo' ) ) {
+			return khesht_logo( $size );
+		}
+		return '<img src="' . esc_url( BMN_CORE_URL . 'assets/img/logo-brick.svg' ) . '" width="' . (int) $size . '" height="' . (int) $size . '" alt="' . esc_attr__( 'نشان شهرداری بشرویه', 'boshrouyeh-eservices' ) . '">';
 	}
 
 	/**

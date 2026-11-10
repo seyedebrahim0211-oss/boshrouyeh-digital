@@ -51,6 +51,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                 children: [
                   Row(children: [
+                    const BrandLogo(size: 44),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text(jalaliToday(), style: t.bodySmall),
@@ -101,6 +103,7 @@ class _HeroCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: Stack(children: [
         Positioned(left: 24, top: 18, child: Container(width: 46, height: 46, decoration: const BoxDecoration(color: Brand.sun, shape: BoxShape.circle))),
+        const Positioned(left: 86, top: 10, child: Opacity(opacity: .16, child: BrandLogo(size: 88, color: Brand.brick))),
         const Positioned.fill(top: 50, child: Skyline(height: 100)),
         const Positioned(
           right: 18,

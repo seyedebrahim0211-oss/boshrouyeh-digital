@@ -108,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('ورود شهروند')),
       body: ListView(padding: const EdgeInsets.all(20), children: [
-        const Center(child: Taqche(icon: 'user', size: 72, active: true)),
+        const Center(child: LogoBadge(size: 104)),
         const SizedBox(height: 16),
         Text('بدون رمز عبور؛ فقط شمارهٔ همراه و کد پیامکی.', textAlign: TextAlign.center, style: t.bodyMedium),
         if (widget.reason != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(widget.reason!, textAlign: TextAlign.center, style: t.bodySmall)),

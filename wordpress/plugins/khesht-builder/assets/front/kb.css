@@ -1,3 +1,5 @@
+/* Respect the hidden attribute even on grid/flex components. */
+.bmn-es [hidden], .bmn-block [hidden], .kb-page [hidden] { display: none !important; }
 /* Khesht Builder — front-end layout & widget styles (Khesht tokens with fallbacks). */
 .kb-page { --kb-wide: 1200px; --kb-content: 760px; --kb-gut: clamp(1rem, 4vw, 2rem); --kb-s: var(--kh-surface, #fff); --kb-l: var(--kh-line, #EADBC4); --kb-m: var(--kh-muted, #6B5A4E); --kb-q: var(--kh-qanat, #16737A); --kb-t: var(--kh-tint, #F3E6D2); --kb-b: var(--kh-brick, #6E3B23); --kb-n: var(--kh-night, #1F2A44); --kb-sun: var(--kh-sun, #D9A441); --kb-h: var(--kh-heading-2, #1F2A44); --kb-k: var(--kh-kahgel, #E2C9A3); --kb-kh: var(--kh-khesht, #A0673F); }
 .kb-page * { box-sizing: border-box; }

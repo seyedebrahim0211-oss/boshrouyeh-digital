@@ -123,7 +123,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         appBar: AppBar(title: const Text('پیشخوان من'), actions: [IconButton(tooltip: 'تنظیمات', onPressed: () => _settings(context), icon: const KIcon('filter'))]),
         body: ListView(padding: const EdgeInsets.all(24), children: [
           const SizedBox(height: 30),
-          const Center(child: Taqche(icon: 'user', size: 80)),
+          const Center(child: LogoBadge(size: 110)),
           const SizedBox(height: 16),
           Text('پرونده‌ها، پرداخت‌ها و گزارش‌های شما در یک جا.', textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 20),

@@ -246,9 +246,9 @@ final class KB_Admin {
 				'categories' => KB_Widgets::categories(),
 				'icons'      => $icons,
 				'canPublish' => current_user_can( get_post_type_object( $post->post_type )->cap->publish_posts ),
-				'logo'       => defined( 'KHESHT_DIR' ) ? KHESHT_URI . '/assets/svg/logo.svg' : '',
+				'logo'       => KB_URL . 'assets/img/logo-brick.svg',
 			)
 		);
-		echo '<div id="kb-app" class="kb-app" dir="rtl"><div class="kb-boot"><span class="kb-boot__star"></span><p>در حال آماده‌سازی صفحه‌ساز خشت…</p></div></div>';
+		echo '<div id="kb-app" class="kb-app" dir="rtl"><div class="kb-boot"><img class="kb-boot__logo" src="' . esc_url( KB_URL . 'assets/img/logo-brick.svg' ) . '" alt="" width="96" height="96"><span class="kb-boot__star"></span><p>در حال آماده‌سازی صفحه‌ساز خشت…</p></div></div>';
 	}
 }

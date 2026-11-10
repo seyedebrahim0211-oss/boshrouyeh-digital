@@ -1,3 +1,5 @@
+/* Respect the hidden attribute even on grid/flex components. */
+.bmn-es [hidden], .bmn-block [hidden], .kb-page [hidden] { display: none !important; }
 /* Boshrouyeh e-services UI — Khesht tokens with fallbacks. */
 .bmn-es { --_s: var(--kh-surface, #fff); --_l: var(--kh-line, #EADBC4); --_m: var(--kh-muted, #6B5A4E); --_q: var(--kh-qanat, #16737A); --_t: var(--kh-tint, #F3E6D2); --_b: var(--kh-brick, #6E3B23); --_n: var(--kh-night, #1F2A44); --_h: var(--kh-heading-2, #1F2A44); --_sun: var(--kh-sun, #D9A441); }
 .bmn-es h2 { font: 700 1.1rem var(--kh-font-body, inherit) !important; color: var(--_h) !important; margin: 0; }
@@ -132,3 +134,6 @@
 .bmn-start .bmn-bill-card .kh-alert--warn { color: #6A4A0F; }
 .bmn-start .bmn-success p { color: #E3D8C7; }
 .bmn-err.is-ok { color: var(--_q); }
+
+.bmn-login__logo { color: var(--_b); flex: none; display: grid; place-items: center; width: 70px; height: 70px; border-radius: 50%; background: var(--kh-tint, #F3E6D2); }
+html[data-theme="dark"] .bmn-login__logo, .bmn-start .bmn-login__logo { color: var(--kh-kahgel, #E2C9A3); background: rgba(255,255,255,.08); }
