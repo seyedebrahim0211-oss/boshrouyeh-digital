@@ -26,6 +26,9 @@ PHP
 ln -sfn "$ROOT/wordpress/themes/boshrouyeh-khesht" site/wp-content/themes/boshrouyeh-khesht
 for p in boshrouyeh-core boshrouyeh-eservices khesht-builder; do ln -sfn "$ROOT/wordpress/plugins/$p" "site/wp-content/plugins/$p"; done
 $WP core is-installed 2>/dev/null || $WP core install --url="http://localhost:$PORT" --title="شهرداری بشرویه" --admin_user=admin --admin_password="${WP_PASS:-admin123}" --admin_email=admin@example.com --skip-email --quiet
+# WP-CLI + SQLite drop-in can store the docroot sub-path (/site) in the URLs; pin them.
+$WP option update siteurl "http://localhost:$PORT" --quiet
+$WP option update home "http://localhost:$PORT" --quiet
 $WP option update timezone_string Asia/Tehran --quiet
 $WP rewrite structure '/%postname%/' --quiet
 $WP theme activate boshrouyeh-khesht --quiet
