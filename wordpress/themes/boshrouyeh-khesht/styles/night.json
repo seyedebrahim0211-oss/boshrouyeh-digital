@@ -1,0 +1,12 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/theme.json",
+	"version": 3,
+	"title": "شب کویر",
+	"styles": {
+		"color": { "background": "#151C2E", "text": "#EFE5D6" },
+		"elements": {
+			"heading": { "color": { "text": "var(--wp--preset--color--kahgel)" } },
+			"link": { "color": { "text": "#6FC3C8" } }
+		}
+	}
+}

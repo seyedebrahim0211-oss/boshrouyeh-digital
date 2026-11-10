@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  php:
+    name: PHP lint & WPCS (security)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ["8.0", "8.1", "8.2", "8.3"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer
+          coverage: none
+      - name: Syntax check
+        run: |
+          status=0
+          while IFS= read -r -d '' f; do php -l "$f" > /dev/null || status=1; done < <(find wordpress bin -name '*.php' -print0)
+          exit $status
+      - name: Icon sets in sync
+        run: php bin/sync-icons.php --check
+      - name: WordPress Coding Standards (security rules)
+        if: matrix.php == '8.3'
+        run: |
+          composer install --no-interaction --no-progress
+          vendor/bin/phpcs --report=summary --report-full
+
+  e2e:
+    name: End-to-end (WordPress + Playwright)
+    runs-on: ubuntu-latest
+    needs: php
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: pdo_sqlite, gd, intl
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Set up WordPress
+        run: tests/e2e/setup-wp.sh "$RUNNER_TEMP/wp" 8088
+      - name: Start server
+        run: |
+          php -S localhost:8088 -t "$RUNNER_TEMP/wp/site" tests/e2e/router.php > "$RUNNER_TEMP/server.log" 2>&1 &
+          sleep 2
+          curl -fsS http://localhost:8088/ > /dev/null
+      - name: Install Playwright
+        run: |
+          npm init -y > /dev/null
+          npm i -D playwright@1.47.2
+          npx playwright install --with-deps chromium
+      - name: Citizen flows (OTP, 137, dues, payment, tracking)
+        run: BASE=http://localhost:8088 OUT=shots node tests/e2e/e2e.js
+      - name: Page builder (template, drag & drop, publish)
+        run: BASE=http://localhost:8088 OUT=shots node tests/e2e/builder.js
+      - name: PHP errors must be empty
+        run: |
+          LOG="$RUNNER_TEMP/wp/site/wp-content/debug.log"
+          if [ -f "$LOG" ] && grep -E "PHP (Fatal|Warning|Parse)" "$LOG"; then exit 1; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots
+          path: shots/
+
+  flutter:
+    name: Flutter app (analyze, test, build APK)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter --version
+      - name: Generate platform projects
+        run: ./tool/setup_platforms.sh
+      - run: flutter pub get
+      - run: flutter analyze --no-fatal-infos
+      - run: flutter test
+      - name: Build APK
+        run: flutter build apk --release --dart-define=API_BASE=https://boshrooyeh.ir/wp-json/bmn/v1/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: boshrouyeh-man-apk
+          path: app/build/app/outputs/flutter-apk/app-release.apk

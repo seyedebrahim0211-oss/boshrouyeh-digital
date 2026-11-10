@@ -1,0 +1,8 @@
+.bmn-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px 20px; padding-top: 6px; }
+.bmn-field { display: grid; gap: 6px; align-content: start; }
+.bmn-field--wide { grid-column: 1 / -1; }
+.bmn-field label { font-weight: 600; }
+.bmn-field input[type=text], .bmn-field input[type=url], .bmn-field input[type=number], .bmn-field select, .bmn-field textarea { width: 100%; }
+.bmn-ltr { direction: ltr; text-align: left; }
+.bmn-icon-preview { display: inline-grid; place-items: center; width: 40px; height: 44px; border-radius: 999px 999px 8px 8px; background: #F3E6D2; color: #A0673F; margin-top: 4px; }
+.bmn-media__name { color: #555; font-size: 12px; }

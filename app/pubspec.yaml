@@ -1,0 +1,52 @@
+name: boshrouyeh_man
+description: "بشرویهٔ من — اپ شهروندی شهرداری بشرویه (پرداخت عوارض، سامانه ۱۳۷، پیگیری، گردشگری)."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  http: ^1.2.2
+  provider: ^6.1.2
+  shared_preferences: ^2.3.2
+  flutter_secure_storage: ^9.2.2
+  url_launcher: ^6.3.0
+  image_picker: ^1.1.2
+  geolocator: ^13.0.1
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+  flutter_svg: ^2.0.10+1
+  just_audio: ^0.9.40
+  cached_network_image: ^3.4.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+  fonts:
+    - family: Vazirmatn
+      fonts:
+        - asset: assets/fonts/Vazirmatn-UI-FD-Regular.ttf
+        - asset: assets/fonts/Vazirmatn-UI-FD-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Vazirmatn-UI-FD-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Vazirmatn-UI-FD-ExtraBold.ttf
+          weight: 800
+    - family: Lalezar
+      fonts:
+        - asset: assets/fonts/Lalezar-Regular.ttf
+    - family: Amiri
+      fonts:
+        - asset: assets/fonts/Amiri-Regular.ttf

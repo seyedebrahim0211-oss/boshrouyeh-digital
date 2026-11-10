@@ -1,0 +1,18 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Dependencies & build
+/vendor/
+node_modules/
+/shots/
+/test-results/
+*.log
+
+# Local WordPress (docker / sqlite)
+/.wp/
+/wordpress/wp-content/
+.env

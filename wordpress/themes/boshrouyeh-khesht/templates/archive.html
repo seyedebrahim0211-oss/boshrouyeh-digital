@@ -1,0 +1,46 @@
+<!-- wp:template-part {"slug":"topbar","area":"header"} /-->
+<!-- wp:template-part {"slug":"header","area":"header"} /-->
+<!-- wp:group {"tagName":"main","anchor":"kh-main","className":"kh-main","layout":{"type":"constrained"}} -->
+<main class="wp-block-group kh-main" id="kh-main">
+<!-- wp:group {"align":"full","className":"kh-page-head is-style-kh-khesht","layout":{"type":"constrained","wideSize":"1200px"}} -->
+<div class="wp-block-group alignfull kh-page-head is-style-kh-khesht">
+<!-- wp:group {"align":"wide","layout":{"type":"default"}} -->
+<div class="wp-block-group alignwide">
+<!-- wp:boshrouyeh/breadcrumbs /-->
+<!-- wp:query-title {"type":"archive","level":1,"className":"kh-page-title","showPrefix":false} /-->
+<!-- wp:term-description /-->
+</div>
+<!-- /wp:group -->
+</div>
+<!-- /wp:group -->
+<!-- wp:query {"queryId":1,"query":{"perPage":12,"inherit":true},"align":"wide","className":"kh-archive"} -->
+<div class="wp-block-query alignwide kh-archive">
+<!-- wp:post-template {"className":"kh-cards","layout":{"type":"grid","columnCount":3,"minimumColumnWidth":"16rem"}} -->
+<!-- wp:group {"className":"kh-card kh-card--post","layout":{"type":"default"}} -->
+<div class="wp-block-group kh-card kh-card--post">
+<!-- wp:post-featured-image {"isLink":true,"aspectRatio":"4/3","sizeSlug":"khesht-card","className":"kh-card__media"} /-->
+<!-- wp:group {"className":"kh-card__body","layout":{"type":"default"}} -->
+<div class="wp-block-group kh-card__body">
+<!-- wp:post-title {"level":2,"isLink":true,"className":"kh-card__title"} /-->
+<!-- wp:post-excerpt {"excerptLength":22,"className":"kh-card__excerpt"} /-->
+<!-- wp:post-date {"className":"kh-card__date"} /-->
+</div>
+<!-- /wp:group -->
+</div>
+<!-- /wp:group -->
+<!-- /wp:post-template -->
+<!-- wp:query-pagination {"layout":{"type":"flex","justifyContent":"center"},"className":"kh-pagination"} -->
+<!-- wp:query-pagination-previous {"label":"قبلی"} /-->
+<!-- wp:query-pagination-numbers /-->
+<!-- wp:query-pagination-next {"label":"بعدی"} /-->
+<!-- /wp:query-pagination -->
+<!-- wp:query-no-results -->
+<!-- wp:paragraph {"className":"kh-empty"} -->
+<p class="kh-empty">موردی یافت نشد.</p>
+<!-- /wp:paragraph -->
+<!-- /wp:query-no-results -->
+</div>
+<!-- /wp:query -->
+</main>
+<!-- /wp:group -->
+<!-- wp:template-part {"slug":"footer","area":"footer"} /-->

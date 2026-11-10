@@ -1,0 +1,134 @@
+/* Boshrouyeh e-services UI — Khesht tokens with fallbacks. */
+.bmn-es { --_s: var(--kh-surface, #fff); --_l: var(--kh-line, #EADBC4); --_m: var(--kh-muted, #6B5A4E); --_q: var(--kh-qanat, #16737A); --_t: var(--kh-tint, #F3E6D2); --_b: var(--kh-brick, #6E3B23); --_n: var(--kh-night, #1F2A44); --_h: var(--kh-heading-2, #1F2A44); --_sun: var(--kh-sun, #D9A441); }
+.bmn-es h2 { font: 700 1.1rem var(--kh-font-body, inherit) !important; color: var(--_h) !important; margin: 0; }
+.bmn-es .kh-panel { background: var(--_s); border: 1px solid var(--_l); border-radius: 16px; padding: clamp(1rem, 3vw, 1.5rem); box-shadow: var(--kh-shadow, none); }
+.bmn-err { color: #B42318; font-size: .88rem; min-height: 1.2em; margin: .2rem 0 0; }
+.bmn-start .bmn-err { color: #FFB4AB; }
+.bmn-link { background: none; border: 0; padding: 0; color: var(--_q); font: 700 .88rem var(--kh-font-body, inherit); cursor: pointer; text-decoration: none; }
+.bmn-link[disabled] { color: var(--_m); cursor: default; }
+.bmn-hp { position: absolute !important; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.bmn-form-head, .bmn-login__head { display: flex; gap: .9rem; align-items: center; margin-bottom: 1rem; }
+.bmn-form-head p, .bmn-login__head p { margin: .15rem 0 0; }
+.bmn-login { max-width: 460px; margin-inline: auto; }
+.bmn-start .bmn-login { background: transparent; border: 0; box-shadow: none; padding: 0; }
+.bmn-start .bmn-login__head h2 { color: #F6EEE1 !important; }
+.bmn-login__alt { text-align: center; font-size: .88rem; margin: .4rem 0 0; }
+.bmn-login__legal { text-align: center; margin: .6rem 0 0; }
+.bmn-code { text-align: center !important; letter-spacing: .6em; font-size: 1.5rem !important; font-weight: 800 !important; }
+.bmn-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+
+/* Chips (radio) */
+.bmn-chips { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: .45rem; }
+.bmn-chips legend { width: 100%; margin-bottom: .5rem; }
+.bmn-chips label { position: relative; cursor: pointer; }
+.bmn-chips input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.bmn-chips span { display: inline-block; padding: .45rem 1rem; border-radius: 999px; background: var(--_t); color: var(--_b); font-weight: 700; font-size: .88rem; border: 1.5px solid transparent; transition: background .2s, color .2s; }
+.bmn-chips input:checked + span { background: var(--_q); color: #fff; }
+.bmn-chips input:focus-visible + span { outline: 2px solid var(--_sun); outline-offset: 2px; }
+
+/* Rating */
+.bmn-rating { border: 0; padding: 0; margin: 0; display: inline-flex; flex-direction: row-reverse; justify-content: flex-end; gap: .2rem; }
+.bmn-rating legend { width: 100%; margin-bottom: .3rem; float: right; }
+.bmn-rating input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.bmn-rating label { font-size: 1.8rem; color: var(--_l); cursor: pointer; line-height: 1; transition: color .15s; }
+.bmn-rating label:hover, .bmn-rating label:hover ~ label, .bmn-rating input:checked ~ label { color: var(--_sun); }
+.bmn-rating input:focus-visible + label { outline: 2px solid var(--_sun); border-radius: 4px; }
+
+/* Map + photo */
+.bmn-map-wrap { position: relative; }
+.bmn-map { height: 240px; border-radius: 14px; border: 1px solid var(--_l); background: var(--_t); z-index: 0; }
+.bmn-locate { position: absolute; bottom: .8rem; inset-inline-start: .8rem; z-index: 500; box-shadow: var(--kh-shadow-lift, none); }
+.bmn-photo-row { display: grid; grid-template-columns: 120px 1fr; gap: 1rem; align-items: stretch; }
+.bmn-photo { position: relative; display: grid; place-content: center; justify-items: center; gap: .3rem; border: 2px dashed var(--kh-khesht, #A0673F); border-radius: 14px; color: var(--kh-khesht, #A0673F); cursor: pointer; font-size: .82rem; font-weight: 700; overflow: hidden; min-height: 120px; background: var(--kh-surface-2, #FBF6EE); }
+.bmn-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+#bmn-photo:focus-visible + .kh-field, .bmn-photo:focus-within { outline: 2px solid var(--_sun); }
+.leaflet-container { font-family: var(--kh-font-body, inherit); }
+
+/* Success */
+.bmn-success { text-align: center; padding: 2rem 1rem; background: var(--_s); border-radius: 18px; border: 1px solid var(--_l); }
+.bmn-success__icon { width: 72px; height: 72px; border-radius: 50%; display: inline-grid; place-items: center; background: var(--_q); color: #fff; animation: bmn-pop .4s cubic-bezier(.2, .7, .2, 1.4); }
+.bmn-success h2 { margin-top: .8rem !important; color: var(--_q) !important; }
+.bmn-success__code { font: 400 2rem var(--kh-font-display, inherit); color: var(--_b); letter-spacing: .08em; margin: .2rem 0; direction: ltr; }
+.bmn-start .bmn-success { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); color: #F6EEE1; }
+.bmn-start .bmn-success__code { color: var(--_sun); }
+@keyframes bmn-pop { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* Bill */
+.bmn-bill-card { margin-top: 1rem; background: var(--_s); color: var(--kh-text, #2A211C); border-radius: 16px; overflow: hidden; border: 1px solid var(--_l); }
+.bmn-bill-card__head { background: url(../../../boshrouyeh-core/assets/img/girih-pattern.svg), var(--_b); color: #F6EEE1; padding: .9rem 1.1rem; display: grid; gap: .1rem; }
+.bmn-bill-card__head small { opacity: .85; }
+.bmn-bill-card__head strong { font: 400 1.25rem var(--kh-font-display, inherit); }
+.bmn-bill-card dl { margin: 0; padding: .6rem 1.1rem; }
+.bmn-bill-card dl div { display: flex; justify-content: space-between; gap: 1rem; padding: .55rem 0; border-bottom: 1px dashed var(--_l); font-size: .92rem; }
+.bmn-bill-card dt { color: var(--_m); }
+.bmn-bill-card dd { margin: 0; font-weight: 700; }
+.bmn-bill-card .is-discount dd { color: var(--_q); }
+.bmn-bill-card__total { display: flex; justify-content: space-between; align-items: baseline; padding: .4rem 1.1rem .8rem; margin: 0; }
+.bmn-bill-card__total b { font: 400 1.7rem var(--kh-font-display, inherit); color: var(--_b); }
+.bmn-bill-card__total small { font: 700 .8rem var(--kh-font-body, inherit); color: var(--_m); }
+.bmn-bill-card > .kh-alert { margin: 0 1.1rem .8rem; }
+.bmn-bill-card > .kh-btn { width: calc(100% - 2.2rem); margin: 0 1.1rem .6rem; }
+.bmn-bill-card__alt { display: block; text-align: center; padding: 0 0 1rem; }
+
+/* Dashboard */
+.bmn-dash { display: grid; gap: 1.2rem; padding-block: 1.5rem; }
+.bmn-dash__head { display: flex; align-items: center; gap: 1rem; background: url(../../../boshrouyeh-core/assets/img/girih-pattern.svg), var(--_n); color: #F6EEE1; border-radius: 20px; padding: 1.3rem 1.5rem; }
+.bmn-dash__head h1 { font: 400 clamp(1.4rem, 3vw, 1.9rem) var(--kh-font-display, inherit) !important; color: #F6EEE1 !important; margin: 0; }
+.bmn-dash__head .kh-help { color: #C9BCA8; margin: 0; }
+.bmn-dash__head .kh-btn { margin-inline-start: auto; }
+.bmn-avatar { width: 64px; height: 70px; border-radius: 999px 999px 14px 14px; background: var(--kh-kahgel, #E2C9A3); color: var(--_b); display: grid; place-items: center; flex: none; }
+.bmn-stats { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem; }
+.bmn-stats li { background: var(--_s); border: 1px solid var(--_l); border-radius: 16px; padding: 1rem; text-align: center; box-shadow: var(--kh-shadow, none); }
+.bmn-stats b { display: block; font: 400 2rem var(--kh-font-display, inherit); color: var(--_h); }
+.bmn-stats span { color: var(--_m); font-size: .88rem; font-weight: 700; }
+.bmn-stats .is-action { background: var(--_q); border-color: var(--_q); }
+.bmn-stats .is-action b, .bmn-stats .is-action span { color: #fff; }
+.bmn-quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; }
+.bmn-quick a { display: flex; flex-direction: column; align-items: center; gap: .5rem; padding: .9rem .4rem; background: var(--_s); border: 1px solid var(--_l); border-radius: 14px; text-decoration: none; color: var(--_h); font-weight: 700; font-size: .88rem; transition: transform .2s, border-color .2s; }
+.bmn-quick a:hover { transform: translateY(-3px); border-color: var(--_q); }
+.bmn-dash__grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 1.2rem; align-items: start; }
+.bmn-dash__grid h2 { margin-bottom: 1rem !important; }
+.bmn-files-list, .bmn-pay-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .8rem; }
+.bmn-file { border: 1px solid var(--_l); border-radius: 14px; padding: .9rem 1rem; background: var(--kh-surface-2, #FBF6EE); }
+.bmn-file__top { display: flex; justify-content: space-between; gap: .6rem; align-items: flex-start; }
+.bmn-file__top strong { font-size: .95rem; color: var(--_h); }
+.bmn-file .kh-help { margin: .3rem 0 .6rem; }
+.bmn-progress { display: grid; grid-template-columns: repeat(4, 1fr); gap: .35rem; }
+.bmn-progress span { height: 6px; border-radius: 4px; background: var(--_l); }
+.bmn-progress span.on { background: var(--_q); }
+.bmn-pay-list li { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: .8rem; border-bottom: 1px dashed var(--_l); }
+.bmn-pay-list li:last-child { border-bottom: 0; }
+.bmn-pay-list strong { display: block; font-size: .9rem; color: var(--_h); }
+.bmn-pay-list small { color: var(--_m); }
+.bmn-pay-list__end { display: grid; justify-items: end; gap: .2rem; font-size: .85rem; }
+.bmn-profile summary { cursor: pointer; font-weight: 700; color: var(--_h); }
+.bmn-profile form { margin-top: 1rem; max-width: 480px; }
+.bmn-dash-guest { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center; padding-block: 2rem; }
+.bmn-dash-guest__art { min-height: 340px; border-radius: 160px 160px 24px 24px; background: url(../../../boshrouyeh-core/assets/illustrations/badgir-house.svg) center / cover; box-shadow: var(--kh-shadow-lift, none); }
+
+/* Tracking */
+.bmn-track-result { margin-top: 1rem; }
+.bmn-track-card .bmn-progress { margin: .6rem 0 1rem; }
+.bmn-timeline { list-style: none; margin: 0; padding: 0; border-inline-start: 2px dashed var(--_l); }
+.bmn-timeline li { position: relative; padding: 0 1.2rem .9rem; }
+.bmn-timeline li::before { content: ""; position: absolute; inset-inline-start: -7px; top: .4rem; width: 12px; height: 12px; border-radius: 50%; background: var(--_q); box-shadow: 0 0 0 3px var(--_s); }
+.bmn-timeline small { display: block; color: var(--_m); font-size: .8rem; }
+.bmn-timeline p { margin: .3rem 0 0; font-size: .9rem; }
+
+@media (max-width: 900px) {
+	.bmn-dash__grid, .bmn-dash-guest { grid-template-columns: 1fr; }
+	.bmn-dash-guest__art { min-height: 180px; order: 2; }
+}
+@media (max-width: 600px) {
+	.bmn-quick { grid-template-columns: repeat(2, 1fr); }
+	.bmn-photo-row { grid-template-columns: 1fr; }
+	.bmn-photo { min-height: 96px; }
+	.bmn-dash__head { flex-wrap: wrap; padding: 1rem; }
+	.bmn-stats b { font-size: 1.6rem; }
+}
+
+/* Inside the dark "start service" box */
+.bmn-start .bmn-bill-card p, .bmn-start .bmn-bill-card .bmn-bill-card__total span { color: var(--_m); }
+.bmn-start .bmn-bill-card .kh-alert--warn { color: #6A4A0F; }
+.bmn-start .bmn-success p { color: #E3D8C7; }
+.bmn-err.is-ok { color: var(--_q); }

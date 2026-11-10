@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<ruleset name="Boshrouyeh">
+	<description>WordPress Coding Standards (security-focused) for the Boshrouyeh theme and plugins.</description>
+	<file>wordpress/themes</file>
+	<file>wordpress/plugins</file>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/assets/*</exclude-pattern>
+	<arg name="extensions" value="php"/>
+	<arg value="sp"/>
+	<arg name="colors"/>
+	<config name="testVersion" value="8.0-"/>
+	<config name="minimum_wp_version" value="6.5"/>
+
+	<!-- Security & correctness are enforced as errors. -->
+	<rule ref="WordPress.Security"/>
+	<rule ref="WordPress.DB.PreparedSQL"/>
+	<rule ref="WordPress.DB.PreparedSQLPlaceholders"/>
+	<rule ref="WordPress.WP.I18n"/>
+	<rule ref="WordPress.PHP.DontExtract"/>
+	<rule ref="WordPress.PHP.RestrictedPHPFunctions"/>
+	<rule ref="WordPress.WP.GlobalVariablesOverride"/>
+	<rule ref="Generic.PHP.Syntax"/>
+	<rule ref="PHPCompatibilityWP"/>
+</ruleset>
