@@ -29,7 +29,12 @@ class _ContentScreenState extends State<ContentScreen> {
         IconButton(
           tooltip: 'اشتراک‌گذاری',
           icon: const Icon(Icons.share_rounded),
-          onPressed: () => _future.then((d) => Share.share('${d['title']}\n${d['url']}', subject: '${d['title']}')).catchError((_) => null),
+          onPressed: () async {
+            try {
+              final d = await _future;
+              await Share.share('${d['title']}\n${d['url']}', subject: '${d['title']}');
+            } catch (_) {}
+          },
         ),
       ]),
       body: FutureBuilder<Map<String, dynamic>>(

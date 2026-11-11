@@ -227,7 +227,7 @@ class _UnitAppointmentScreenState extends State<UnitAppointmentScreen> {
                   if (_units.isEmpty) const StateView.empty('فعلاً واحدی نوبت اینترنتی ندارد.'),
                   if (_units.isNotEmpty) ...[
                     DropdownButtonFormField<int>(
-                      value: _unit,
+                      initialValue: _unit,
                       isExpanded: true,
                       decoration: const InputDecoration(labelText: 'واحد'),
                       items: _units.map((u) => DropdownMenuItem<int>(value: (u['id'] as num).toInt(), child: Text('${u['name']}'))).toList(),

@@ -142,7 +142,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         controller: _scroll,
                         physics: const AlwaysScrollableScrollPhysics(),
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 260, mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: .72),
+                        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 260, mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: .72),
                         itemCount: _items.length + (_done ? 0 : 1),
                         itemBuilder: (_, i) => i >= _items.length ? const Center(child: CircularProgressIndicator(color: Brand.qanat)) : MediaCard(item: _items[i]),
                       ),

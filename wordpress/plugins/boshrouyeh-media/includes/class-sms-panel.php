@@ -349,12 +349,16 @@ final class BMNM_SMS_Panel {
 			)
 		);
 		$cid = (int) $wpdb->insert_id;
-		foreach ( array_chunk( $list, 200, true ) as $chunk ) {
-			$vals = array();
-			foreach ( $chunk as $phone => $name ) {
-				$vals[] = $wpdb->prepare( '(%d,%s,%s)', $cid, $phone, mb_substr( $name, 0, 80 ) );
-			}
-			$wpdb->query( "INSERT INTO {$q} (campaign_id, phone, name) VALUES " . implode( ',', $vals ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.NoCaching -- values prepared above.
+		foreach ( $list as $phone => $name ) {
+			$wpdb->insert(
+				$q,
+				array(
+					'campaign_id' => $cid,
+					'phone'       => (string) $phone,
+					'name'        => mb_substr( (string) $name, 0, 80 ),
+				),
+				array( '%d', '%s', '%s' )
+			);
 		}
 		// phpcs:enable
 		bmnm_log( 'sms', 'کمپین «' . $desc . '» برای ' . count( $list ) . ' گیرنده ثبت شد.' );
