@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../core/api.dart';
@@ -24,7 +25,13 @@ class _ContentScreenState extends State<ContentScreen> {
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title, overflow: TextOverflow.ellipsis)),
+      appBar: AppBar(title: Text(widget.title, overflow: TextOverflow.ellipsis), actions: [
+        IconButton(
+          tooltip: 'اشتراک‌گذاری',
+          icon: const Icon(Icons.share_rounded),
+          onPressed: () => _future.then((d) => Share.share('${d['title']}\n${d['url']}', subject: '${d['title']}')).catchError((_) => null),
+        ),
+      ]),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _future,
         builder: (context, snap) {

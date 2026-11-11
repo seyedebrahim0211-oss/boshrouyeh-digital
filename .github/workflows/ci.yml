@@ -149,7 +149,7 @@ jobs:
         run: |
           mkdir -p dist
           (cd wordpress/themes && zip -qr -X ../../dist/boshrouyeh-khesht.zip boshrouyeh-khesht)
-          for p in boshrouyeh-core boshrouyeh-eservices khesht-builder; do (cd wordpress/plugins && zip -qr -X ../../dist/$p.zip $p); done
+          for p in boshrouyeh-core boshrouyeh-eservices khesht-builder boshrouyeh-media; do (cd wordpress/plugins && zip -qr -X ../../dist/$p.zip $p); done
           ls -la dist
       - name: Publish to release wp-latest
         env:

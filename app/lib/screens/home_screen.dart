@@ -10,7 +10,12 @@ import '../models/models.dart';
 import '../theme/brand.dart';
 import '../widgets/brand_widgets.dart';
 import '../widgets/k_icon.dart';
+import 'city_services_screens.dart';
 import 'content_screen.dart';
+import 'explore_screen.dart';
+import 'media_detail_screen.dart';
+import 'participation_screen.dart';
+import '../models/media.dart';
 import 'fleet_screen.dart';
 import 'track_screen.dart';
 import 'visits_screen.dart';
@@ -76,13 +81,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (services.isNotEmpty) _ServiceGrid(services: services.take(5).toList(), onMore: () => widget.onNavigate(1)),
                   const SizedBox(height: 12),
                   const _CityShortcuts(),
+                  const SizedBox(height: 8),
+                  const _NewServices(),
+                  const SizedBox(height: 8),
+                  const _MediaStrip(),
                   if (notices.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     _NoticeCard(post: notices.firstWhere((n) => n.urgent, orElse: () => notices.first)),
                   ],
                   if (news.isNotEmpty) ...[
                     const SizedBox(height: 16),
-                    const SectionTitle('تازه‌ترین اخبار'),
+                    SectionTitle('تازه‌ترین اخبار', action: 'همه', onAction: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const ExploreScreen(initialKind: 'news')))),
                     ...news.map((p) => Padding(padding: const EdgeInsets.only(bottom: 10), child: _NewsTile(post: p))),
                   ],
                 ],
@@ -150,6 +159,74 @@ class _CityShortcuts extends StatelessWidget {
       item('bus', 'مینی‌بوس آنلاین', 'کجاست؟ کی می‌رسد؟', const FleetScreen()),
       item('search', 'پیگیری درخواست', 'به کدام واحد رفت؟', const TrackScreen()),
     ]);
+  }
+}
+
+/// خدمات تازه: اکسپلور، مشارکت، نوبت واحدها، استعلام پروانه.
+class _NewServices extends StatelessWidget {
+  const _NewServices();
+  @override
+  Widget build(BuildContext context) {
+    Widget item(String icon, String title, Widget page) => Expanded(
+          child: Card(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(Brand.radiusCard),
+              onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => page)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+                child: Column(children: [
+                  KIcon(icon, size: 24, color: Brand.khesht),
+                  const SizedBox(height: 6),
+                  Text(title, textAlign: TextAlign.center, maxLines: 2, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 11.5)),
+                ]),
+              ),
+            ),
+          ),
+        );
+    return Row(children: [
+      item('camera', 'اخبار و گزارش تصویری', const ExploreScreen()),
+      item('chart', 'نظرسنجی و بودجهٔ مشارکتی', const ParticipationScreen()),
+      item('calendar', 'نوبت واحدها', const UnitAppointmentScreen()),
+      item('building', 'استعلام پروانه', const PermitScreen()),
+    ]);
+  }
+}
+
+/// Horizontal strip of the latest photo reports / videos.
+class _MediaStrip extends StatefulWidget {
+  const _MediaStrip();
+  @override
+  State<_MediaStrip> createState() => _MediaStripState();
+}
+
+class _MediaStripState extends State<_MediaStrip> {
+  late final Future<List<MediaItem>> _future = _load();
+  Future<List<MediaItem>> _load() async => (await context.read<Api>().getCached('explore', query: {'kind': 'report', 'per_page': '8'}) as List)
+      .map((e) => MediaItem.fromJson(Map<String, dynamic>.from(e as Map)))
+      .toList();
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<MediaItem>>(
+      future: _future,
+      builder: (context, snap) {
+        final items = snap.data ?? const <MediaItem>[];
+        if (items.isEmpty) return const SizedBox.shrink();
+        return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          const SizedBox(height: 8),
+          SectionTitle('گزارش‌های تصویری', action: 'همه', onAction: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const ExploreScreen(initialKind: 'report')))),
+          SizedBox(
+            height: 240,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: items.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              itemBuilder: (_, i) => SizedBox(width: 175, child: MediaCard(item: items[i])),
+            ),
+          ),
+        ]);
+      },
+    );
   }
 }
 
@@ -234,7 +311,7 @@ class _NewsTile extends StatelessWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => ContentScreen(id: post.id, title: post.title))),
+        onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => MediaDetailScreen(id: post.id, title: post.title))),
         child: Row(children: [
           SizedBox(width: 96, height: 84, child: NetImage(post.image)),
           const SizedBox(width: 12),

@@ -1,0 +1,13 @@
+body.login{font-family:Vazirmatn,Tahoma,sans-serif;background:#1F2A44 var(--bmnm-girih) repeat;background-size:64px;min-height:100vh}
+body.login::after{content:"";position:fixed;inset-inline:0;bottom:0;height:10px;background:repeating-linear-gradient(90deg,#A0673F 0 26px,#6E3B23 26px 28px)}
+.login h1 a{width:120px!important;height:120px!important;background-size:contain!important;background-color:#F6EEE1;border-radius:50%;box-shadow:0 0 0 6px rgba(217,164,65,.35)}
+.login form{background:#F6EEE1;border:0;border-radius:22px;box-shadow:0 20px 50px rgba(0,0,0,.35);padding:28px 26px}
+.login label{color:#6E3B23;font-weight:700}
+.login input[type=text],.login input[type=password],.login input[type=email]{border-radius:12px;border:1.5px solid #E2C9A3;background:#fff;font-family:Vazirmatn,Tahoma,sans-serif}
+.login input:focus{border-color:#16737A;box-shadow:0 0 0 2px rgba(22,115,122,.2)}
+.wp-core-ui.login .button-primary{background:#16737A;border-color:#16737A;border-radius:999px;padding:0 26px;font-family:Vazirmatn,Tahoma,sans-serif;font-weight:700}
+.wp-core-ui.login .button-primary:hover{background:#0f5a60}
+.login #nav a,.login #backtoblog a,.login .privacy-policy-link{color:#E2C9A3!important}
+.login #nav a:hover,.login #backtoblog a:hover{color:#D9A441!important}
+.login .message,.login .notice,.login #login_error{border-radius:14px;font-family:Vazirmatn,Tahoma,sans-serif}
+.login .language-switcher{display:none}

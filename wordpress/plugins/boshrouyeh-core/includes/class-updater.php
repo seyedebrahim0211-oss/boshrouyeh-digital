@@ -27,6 +27,7 @@ class BMN_Updater {
 			'boshrouyeh-core'      => array( 'plugin', 'wordpress/plugins/boshrouyeh-core/boshrouyeh-core.php', 'boshrouyeh-core/boshrouyeh-core.php' ),
 			'boshrouyeh-eservices' => array( 'plugin', 'wordpress/plugins/boshrouyeh-eservices/boshrouyeh-eservices.php', 'boshrouyeh-eservices/boshrouyeh-eservices.php' ),
 			'khesht-builder'       => array( 'plugin', 'wordpress/plugins/khesht-builder/khesht-builder.php', 'khesht-builder/khesht-builder.php' ),
+			'boshrouyeh-media'     => array( 'plugin', 'wordpress/plugins/boshrouyeh-media/boshrouyeh-media.php', 'boshrouyeh-media/boshrouyeh-media.php' ),
 			'boshrouyeh-khesht'    => array( 'theme', 'wordpress/themes/boshrouyeh-khesht/style.css', 'boshrouyeh-khesht' ),
 		);
 	}
