@@ -998,3 +998,8 @@ class BMN_App_Update {
 				'size'        => (int) $rel['size'],
 				'download_page' => home_url( '/app/download/' ),
 			)
+		);
+		$res->header( 'Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0' );
+		return $res;
+	}
+}
