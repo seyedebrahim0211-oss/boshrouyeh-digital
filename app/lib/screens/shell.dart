@@ -45,7 +45,9 @@ class ShellState extends State<Shell> with WidgetsBindingObserver {
     if (!mounted || !_foreground || _checking) return;
     final now = DateTime.now();
     if (_lastUpdateCheck != null &&
-        now.difference(_lastUpdateCheck!) < const Duration(minutes: 15)) return;
+        now.difference(_lastUpdateCheck!) < const Duration(minutes: 15)) {
+      return;
+    }
     _lastUpdateCheck = now;
     _checking = true;
     try {
