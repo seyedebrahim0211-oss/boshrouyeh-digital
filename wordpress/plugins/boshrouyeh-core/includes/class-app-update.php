@@ -295,10 +295,13 @@ class BMN_App_Update {
 	/**
 	 * AJAX: receive one chunk (≤ 8 MB).
 	 */
+	// The nonce and capability are checked by ajax_guard() before reading any request values.
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- Verified by ajax_guard().
 	public static function ajax_chunk() {
 		$id    = self::ajax_guard();
-		$index = isset( $_POST['index'] ) && ctype_digit( (string) $_POST['index'] ) ? absint( $_POST['index'] ) : -1;
-		$total = isset( $_POST['total'] ) ? absint( $_POST['total'] ) : 0;
+		$raw_index = isset( $_POST['index'] ) ? sanitize_text_field( wp_unslash( $_POST['index'] ) ) : '';
+		$index = ctype_digit( $raw_index ) ? absint( $raw_index ) : -1;
+		$total = isset( $_POST['total'] ) ? absint( wp_unslash( $_POST['total'] ) ) : 0;
 		$f     = $_FILES['chunk'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 		if ( $total < 1 || $total > 100 || $index < 0 || $index >= $total ) {
 			wp_send_json_error( array( 'message' => 'شمارهٔ قطعه نامعتبر است.' ), 400 );
@@ -318,7 +321,7 @@ class BMN_App_Update {
 	 */
 	public static function ajax_finish() {
 		$id    = self::ajax_guard();
-		$total = isset( $_POST['total'] ) ? absint( $_POST['total'] ) : 0;
+		$total = isset( $_POST['total'] ) ? absint( wp_unslash( $_POST['total'] ) ) : 0;
 		$dir   = self::tmp_dir( $id );
 		if ( $total < 1 || $total > 100 ) {
 			wp_send_json_error( array( 'message' => 'تعداد قطعه نامعتبر است.' ), 400 );
@@ -370,6 +373,8 @@ class BMN_App_Update {
 		@rmdir( $dir ); // phpcs:ignore WordPress.PHP.NoSilencedErrors, WordPress.WP.AlternativeFunctions
 		wp_send_json_success( array( 'version' => $r['name'], 'code' => $r['code'] ) );
 	}
+
+	// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 	/**
 	 * Cancel an unfinished upload and remove its temporary parts.
@@ -480,9 +485,9 @@ class BMN_App_Update {
 		}
 
 		// Status card.
-		echo '<div class="bmn-app__now' . ( $rel['url'] ? '' : ' is-empty' ) . '"><div><small>نسخه‌ای که کاربران دریافت می‌کنند</small><b>' . ( $rel['latest'] ? $fa( $rel['latest'] ) : '—' ) . '</b>';
+		echo '<div class="bmn-app__now' . ( $rel['url'] ? '' : ' is-empty' ) . '"><div><small>نسخه‌ای که کاربران دریافت می‌کنند</small><b>' . ( $rel['latest'] ? esc_html( bmn_fa_digits( (string) $rel['latest'] ) ) : '—' ) . '</b>';
 		if ( $rel['url'] ) {
-			echo '<span>' . ( $rel['code'] ? 'شمارهٔ ساخت ' . $fa( $rel['code'] ) . ' · ' : '' ) . ( $rel['size'] ? esc_html( bmn_fa_digits( size_format( $rel['size'], 1 ) ) ) . ' · ' : '' ) . 'روی همین سایت' . ( $l ? ' · ' . esc_html( human_time_diff( (int) $l['at'] ) ) . ' پیش' : '' ) . '</span>';
+			echo '<span>' . ( $rel['code'] ? 'شمارهٔ ساخت ' . esc_html( bmn_fa_digits( (string) $rel['code'] ) ) . ' · ' : '' ) . ( $rel['size'] ? esc_html( bmn_fa_digits( size_format( $rel['size'], 1 ) ) ) . ' · ' : '' ) . 'روی همین سایت' . ( $l ? ' · ' . esc_html( human_time_diff( (int) $l['at'] ) ) . ' پیش' : '' ) . '</span>';
 		} else {
 			echo '<span>هنوز نسخه‌ای منتشر نشده است؛ اولین فایل APK را پایین همین صفحه بارگذاری کنید.</span>';
 		}
@@ -775,14 +780,14 @@ class BMN_App_Update {
 		}
 		echo '<div class="bmnm-cards"><div class="bmnm-panel"><h2>نسخه‌ای که کاربران دریافت می‌کنند</h2>';
 		if ( $rel['url'] ) {
-			echo '<p style="font-size:28px;font-weight:800;margin:.2em 0">' . $fa( $rel['latest'] ) . '</p><p class="bmnm-muted">' . ( $rel['code'] ? 'شمارهٔ ساخت: ' . $fa( $rel['code'] ) . ' · ' : '' ) . ( $rel['size'] ? esc_html( size_format( $rel['size'] ) ) . ' · ' : '' ) . esc_html( 'local' === $rel['source'] ? 'فایل روی همین سایت' : ( 'github' === $rel['source'] ? 'گیت‌هاب' : 'لینک دستی' ) ) . '</p><code dir="ltr" style="word-break:break-all">' . esc_html( $rel['url'] ) . '</code>';
+			echo '<p style="font-size:28px;font-weight:800;margin:.2em 0">' . esc_html( bmn_fa_digits( (string) $rel['latest'] ) ) . '</p><p class="bmnm-muted">' . ( $rel['code'] ? 'شمارهٔ ساخت: ' . esc_html( bmn_fa_digits( (string) $rel['code'] ) ) . ' · ' : '' ) . ( $rel['size'] ? esc_html( size_format( $rel['size'] ) ) . ' · ' : '' ) . esc_html( 'local' === $rel['source'] ? 'فایل روی همین سایت' : ( 'github' === $rel['source'] ? 'گیت‌هاب' : 'لینک دستی' ) ) . '</p><code dir="ltr" style="word-break:break-all">' . esc_html( $rel['url'] ) . '</code>';
 		} else {
 			echo '<p class="bmnm-muted">هنوز نسخه‌ای تنظیم نشده؛ کاربران فقط نسخهٔ وب (PWA) را می‌بینند.</p>';
 		}
 		echo '<p><a class="button" href="' . esc_url( home_url( '/app/download/' ) ) . '" target="_blank">مشاهدهٔ صفحهٔ دانلود ↗</a></p></div>';
 		echo '<div class="bmnm-panel"><h2>بارگذاری نسخهٔ جدید (APK)</h2>';
 		if ( $l ) {
-			echo '<p><span class="bmnm-badge ok">روی سایت: ' . $fa( $l['name'] ) . ' (' . $fa( $l['code'] ) . ')</span> <span class="bmnm-muted">' . esc_html( size_format( $l['size'] ) . ' · ' . human_time_diff( $l['at'] ) ) . ' پیش</span></p>';
+			echo '<p><span class="bmnm-badge ok">روی سایت: ' . esc_html( bmn_fa_digits( (string) $l['name'] ) ) . ' (' . esc_html( bmn_fa_digits( (string) $l['code'] ) ) . ')</span> <span class="bmnm-muted">' . esc_html( size_format( $l['size'] ) . ' · ' . human_time_diff( $l['at'] ) ) . ' پیش</span></p>';
 		}
 		echo '<form method="post" enctype="multipart/form-data" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="bmn_app_upload">';
 		wp_nonce_field( 'bmn_app_upload' );
