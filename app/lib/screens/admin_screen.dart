@@ -23,6 +23,7 @@ class AdminScreen extends StatefulWidget {
 class _AdminScreenState extends State<AdminScreen> {
   late Future<(AdminSummary, List<PendingItem>)> _future = _load();
   final Set<int> _busy = {};
+  String _search = '';
 
   Future<(AdminSummary, List<PendingItem>)> _load() async {
     final api = context.read<Api>();
@@ -102,6 +103,11 @@ class _AdminScreenState extends State<AdminScreen> {
             if (snap.hasError) return ListView(children: [StateView.error(snap.error.toString(), onRetry: () => setState(() => _future = _load()))]);
             if (!snap.hasData) return const StateView.loading();
             final (sum, pending) = snap.data!;
+            final query = _search.trim().toLowerCase();
+            final matched = query.isEmpty ? sum.sections : sum.sections
+                .where((sec) => [sec.label, sec.desc, sec.group]
+                    .any((label) => label.toLowerCase().contains(query))).toList();
+            final grouped = StaffSection.grouped(matched);
             return ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 32), children: [
               NightPanel(
                 child: Row(children: [
@@ -116,30 +122,30 @@ class _AdminScreenState extends State<AdminScreen> {
                 ]),
               ),
               const SizedBox(height: 14),
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                childAspectRatio: 2.1,
-                children: [
-                  for (final (label, value, icon) in sum.tiles)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                      decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(Brand.radiusCard), border: Border.all(color: Brand.line)),
-                      child: Row(children: [
-                        KIcon(icon, color: Brand.qanat),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text(faDigits(value), style: t.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
-                            Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.bodySmall),
-                          ]),
-                        ),
+              _adaptiveGrid(
+                sum.tiles.map((tile) => Container(
+                  constraints: const BoxConstraints(minHeight: 110),
+                  padding: const EdgeInsets.all(13),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(Brand.radiusCard),
+                    border: Border.all(color: Brand.line),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(children: [
+                        KIcon(tile.$3, color: Brand.qanat, size: 21),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text(tile.$1, softWrap: true,
+                          style: t.bodyMedium?.copyWith(fontWeight: FontWeight.w700))),
                       ]),
-                    ),
-                ],
+                      const SizedBox(height: 12),
+                      Text(faDigits(tile.$2), softWrap: true,
+                        style: t.titleLarge?.copyWith(fontWeight: FontWeight.w900)),
+                    ],
+                  ),
+                )).toList(),
               ),
               if (s.canApprove) ...[
                 const SizedBox(height: 18),
@@ -147,13 +153,31 @@ class _AdminScreenState extends State<AdminScreen> {
                 if (pending.isEmpty) const StateView.empty('همه‌چیز تأیید شده است.', icon: 'check'),
                 for (final p in pending)
                   Card(
-                    child: ListTile(
-                      title: Text(p.title, maxLines: 2, overflow: TextOverflow.ellipsis),
-                      subtitle: Text('${p.kind} · ${p.status} · ${faDigits(p.date)}'),
-                      onTap: p.url.isEmpty ? null : () => launchUrl(Uri.parse(p.url), mode: LaunchMode.externalApplication),
-                      trailing: _busy.contains(p.id)
-                          ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2))
-                          : FilledButton(onPressed: () => _approve(p), child: const Text('تأیید')),
+                    margin: const EdgeInsets.only(bottom: 10),
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                        Text(p.title, style: t.titleMedium, softWrap: true),
+                        const SizedBox(height: 6),
+                        Text('${p.kind} · ${p.status} · ${faDigits(p.date)}',
+                          softWrap: true, style: t.bodySmall),
+                        const SizedBox(height: 12),
+                        Row(children: [
+                          if (p.url.isNotEmpty)
+                            Expanded(child: TextButton.icon(
+                              onPressed: () => launchUrl(Uri.parse(p.url), mode: LaunchMode.externalApplication),
+                              icon: const Icon(Icons.open_in_new, size: 18),
+                              label: const Text('مشاهده'),
+                            )),
+                          if (p.url.isNotEmpty) const SizedBox(width: 8),
+                          Expanded(child: FilledButton(
+                            onPressed: _busy.contains(p.id) ? null : () => _approve(p),
+                            child: _busy.contains(p.id)
+                                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                                : const Text('تأیید و انتشار'),
+                          )),
+                        ]),
+                      ]),
                     ),
                   ),
               ],
@@ -182,38 +206,50 @@ class _AdminScreenState extends State<AdminScreen> {
                   ),
                 ),
               ],
-              for (final g in StaffSection.grouped(sum.sections).entries) ...[
-                const SizedBox(height: 18),
-                SectionTitle(g.key),
-                GridView.count(
-                  crossAxisCount: 2,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                  childAspectRatio: 1.9,
-                  children: [
-                    for (final sec in g.value)
-                      Material(
-                        color: Theme.of(context).cardColor,
-                        borderRadius: BorderRadius.circular(Brand.radiusCard),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(Brand.radiusCard),
-                          onTap: () => _section(sec),
-                          child: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(borderRadius: BorderRadius.circular(Brand.radiusCard), border: Border.all(color: Brand.line)),
-                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
-                              KIcon(sec.icon, color: Brand.qanat, size: 22),
-                              const SizedBox(height: 4),
-                              Text(sec.label, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
-                              Text(sec.desc, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.bodySmall),
-                            ]),
-                          ),
-                        ),
-                      ),
-                  ],
+              const SizedBox(height: 20),
+              const SectionTitle('بخش‌های مدیریتی'),
+              TextField(
+                onChanged: (value) => setState(() => _search = value),
+                textInputAction: TextInputAction.search,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search),
+                  labelText: 'جست‌وجوی بخش‌ها',
+                  hintText: 'کاربران، گزارش‌ها، تنظیمات و…',
                 ),
+              ),
+              const SizedBox(height: 12),
+              if (matched.isEmpty) const StateView.empty('بخشی با این عبارت پیدا نشد.', icon: 'search'),
+              for (final g in grouped.entries) ...[
+                const SizedBox(height: 14),
+                SectionTitle(g.key),
+                _adaptiveGrid(g.value.map((sec) => Semantics(
+                  button: true,
+                  label: '${sec.label}، ${sec.desc}',
+                  child: Material(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(Brand.radiusCard),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(Brand.radiusCard),
+                      onTap: () => _section(sec),
+                      child: Container(
+                        constraints: const BoxConstraints(minHeight: 122),
+                        padding: const EdgeInsets.all(13),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(Brand.radiusCard),
+                          border: Border.all(color: Brand.line),
+                        ),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Taqche(icon: sec.icon, size: 36),
+                          const SizedBox(height: 8),
+                          Text(sec.label, softWrap: true,
+                            style: t.titleSmall?.copyWith(fontWeight: FontWeight.w800)),
+                          const SizedBox(height: 4),
+                          Text(sec.desc, softWrap: true, style: t.bodySmall),
+                        ]),
+                      ),
+                    ),
+                  ),
+                )).toList()),
               ],
               const SizedBox(height: 22),
               Text('برای امنیت: ورود مدیر در اپ ۷ روز اعتبار دارد و حداکثر روی ۲ گوشی فعال است. هر بخش با دسترسی‌های خود شما باز می‌شود.', style: t.bodySmall),
@@ -226,4 +262,19 @@ class _AdminScreenState extends State<AdminScreen> {
       ),
     );
   }
+  /// Natural-height cards adapt to phone width, landscape, tablets and larger fonts.
+  Widget _adaptiveGrid(List<Widget> cards) => LayoutBuilder(
+    builder: (context, constraints) {
+      const gap = 10.0;
+      final width = constraints.maxWidth;
+      final columns = width >= 780 ? 4 : width >= 560 ? 3 : width >= 380 ? 2 : 1;
+      final cellWidth = (width - gap * (columns - 1)) / columns;
+      return Wrap(
+        spacing: gap,
+        runSpacing: gap,
+        children: [for (final card in cards) SizedBox(width: cellWidth, child: card)],
+      );
+    },
+  );
+
 }
