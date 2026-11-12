@@ -5,14 +5,13 @@ import 'package:url_launcher/url_launcher.dart';
 import '../core/api.dart';
 import '../core/auth_store.dart';
 import '../core/format.dart';
-import '../core/settings.dart';
-import '../core/updater.dart';
 import '../models/models.dart';
 import '../models/staff.dart';
 import '../theme/brand.dart';
 import '../widgets/brand_widgets.dart';
 import '../widgets/k_icon.dart';
 import 'admin_screen.dart';
+import 'account_settings_screen.dart';
 import 'login_screen.dart';
 import 'track_screen.dart';
 
@@ -47,7 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _wasLogged = auth.isLoggedIn;
     if (!auth.isLoggedIn) return _guest(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('پیشخوان من'), actions: [IconButton(tooltip: 'تنظیمات', onPressed: () => _settings(context), icon: const KIcon('filter'))]),
+      appBar: AppBar(title: const Text('پیشخوان من'), actions: [TextButton.icon(onPressed: () => _settings(context), icon: const Icon(Icons.settings_outlined), label: const Text('تنظیمات'))]),
       body: RefreshIndicator(
         color: Brand.qanat,
         onRefresh: () async => setState(() => _future = _load()),
@@ -69,6 +68,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ]),
                 ),
               ]),
+              const SizedBox(height: 12),
+              Card(
+                child: ListTile(
+                  contentPadding: const EdgeInsetsDirectional.fromSTEB(14, 6, 10, 6),
+                  leading: const Taqche(icon: 'shield', size: 43),
+                  title: const Text('تنظیمات و امنیت حساب', style: TextStyle(fontWeight: FontWeight.w800)),
+                  subtitle: const Text('دستگاه‌های متصل، ورودهای اخیر، حریم خصوصی و بروزرسانی', softWrap: true),
+                  trailing: const Icon(Icons.chevron_left_rounded),
+                  onTap: () => _settings(context),
+                ),
+              ),
               if (StaffInfo.fromJson(me['staff']).isStaff) ...[
                 const SizedBox(height: 12),
                 Material(
@@ -148,7 +158,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
 
   Widget _guest(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('پیشخوان من'), actions: [IconButton(tooltip: 'تنظیمات', onPressed: () => _settings(context), icon: const KIcon('filter'))]),
+        appBar: AppBar(title: const Text('پیشخوان من'), actions: [TextButton.icon(onPressed: () => _settings(context), icon: const Icon(Icons.settings_outlined), label: const Text('تنظیمات'))]),
         body: ListView(padding: const EdgeInsets.all(24), children: [
           const SizedBox(height: 30),
           const Center(child: LogoBadge(size: 110)),
@@ -156,77 +166,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Text('پرونده‌ها، پرداخت‌ها و گزارش‌های شما در یک جا.', textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 20),
           FilledButton(onPressed: () => ensureLogin(context), child: const Text('ورود با شمارهٔ همراه')),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(onPressed: () => _settings(context), icon: const Icon(Icons.settings_outlined), label: const Text('تنظیمات و بروزرسانی اپ')),
         ]),
       );
 
   void _settings(BuildContext context) {
-    final settings = context.read<AppSettings>();
-    final auth = context.read<AuthStore>();
-    final name = TextEditingController(text: auth.displayName == 'شهروند گرامی' ? '' : auth.displayName);
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (c) => Padding(
-        padding: EdgeInsets.fromLTRB(20, 0, 20, MediaQuery.of(c).viewInsets.bottom + 24),
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text('تنظیمات', style: Theme.of(c).textTheme.headlineSmall),
-          const SizedBox(height: 12),
-          SegmentedButton<ThemeMode>(
-            segments: const [
-              ButtonSegment(value: ThemeMode.light, label: Text('روز')),
-              ButtonSegment(value: ThemeMode.system, label: Text('خودکار')),
-              ButtonSegment(value: ThemeMode.dark, label: Text('شب کویر')),
-            ],
-            selected: {settings.themeMode},
-            onSelectionChanged: (s) {
-              settings.setTheme(s.first);
-              Navigator.pop(c);
-            },
-          ),
-          const SizedBox(height: 12),
-          FutureBuilder<String>(
-            future: Updater.currentVersion(),
-            builder: (_, v) => ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const KIcon('download'),
-              title: const Text('بروزرسانی اپ'),
-              subtitle: Text('نسخهٔ نصب‌شده: ${faDigits(v.data ?? '…')}'),
-              onTap: () {
-                final api = context.read<Api>();
-                Navigator.pop(c);
-                Updater.checkManually(context, api);
-              },
-            ),
-          ),
-          if (auth.isLoggedIn) ...[
-            const SizedBox(height: 16),
-            TextField(controller: name, maxLength: 60, decoration: const InputDecoration(labelText: 'نام و نام خانوادگی')),
-            FilledButton(
-              onPressed: () async {
-                final api = context.read<Api>();
-                try {
-                  final u = await api.post('me', {'name': name.text.trim()}, authed: true);
-                  await auth.setUser(Map<String, dynamic>.from(u as Map));
-                  if (c.mounted) Navigator.pop(c);
-                } on ApiException catch (e) {
-                  if (c.mounted) showMsg(c, e.message);
-                }
-              },
-              child: const Text('ذخیره'),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton(
-              onPressed: () async {
-                final api = context.read<Api>();
-                Navigator.pop(c);
-                await api.logout();
-              },
-              child: const Text('خروج از حساب'),
-            ),
-          ],
-        ]),
-      ),
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(builder: (_) => const AccountSettingsScreen()),
     );
   }
 }
