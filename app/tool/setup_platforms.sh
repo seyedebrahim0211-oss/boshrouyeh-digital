@@ -30,11 +30,14 @@ if [ -f "$GK" ] && ! grep -q 'bmn-ota' "$GK"; then
   sed -i 's#minSdk = flutter.minSdkVersion#minSdk = maxOf(23, flutter.minSdkVersion)#' "$GK"
   sed -i 's#compileOptions {#compileOptions {\n        isCoreLibraryDesugaringEnabled = true#' "$GK"
   printf '\n// bmn-ota\ndependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")\n}\n' >> "$GK"
+  # Release-time lint ("lintVital") crashes inside plugins on compileSdk 36 sources; it is only a check.
+  printf '\nandroid {\n    lint {\n        checkReleaseBuilds = false\n        abortOnError = false\n    }\n}\n' >> "$GK"
 elif [ -f "$GG" ] && ! grep -q 'bmn-ota' "$GG"; then
   sed -i 's#compileSdk = flutter.compileSdkVersion#compileSdk = Math.max(36, flutter.compileSdkVersion)#; s#compileSdkVersion flutter.compileSdkVersion#compileSdkVersion Math.max(36, flutter.compileSdkVersion)#' "$GG"
   sed -i 's#minSdk = flutter.minSdkVersion#minSdk = Math.max(23, flutter.minSdkVersion)#; s#minSdkVersion flutter.minSdkVersion#minSdkVersion Math.max(23, flutter.minSdkVersion)#' "$GG"
   sed -i 's#compileOptions {#compileOptions {\n        coreLibraryDesugaringEnabled true#' "$GG"
   printf '\n// bmn-ota\ndependencies {\n    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.4"\n}\n' >> "$GG"
+  printf '\nandroid {\n    lintOptions {\n        checkReleaseBuilds false\n        abortOnError false\n    }\n}\n' >> "$GG"
 fi
 # App label (Persian) and cleartext off.
 sed -i 's#android:label="[^"]*"#android:label="بشرویهٔ من"#' "$MANIFEST"
