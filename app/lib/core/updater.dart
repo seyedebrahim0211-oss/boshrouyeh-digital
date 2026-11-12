@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ota_update/ota_update.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -94,6 +95,26 @@ int compareVersions(String a, String b) {
 class Updater {
   static const _snoozeKey = 'update_snooze';
   static const _alertsKey = 'update_alerts_enabled';
+  static const _backgroundChannel = MethodChannel('bmn.app/update-notifications');
+
+  /// Sync the user's choice with Android WorkManager when the app starts.
+  /// Native periodic checks run independently of the Flutter UI while allowed
+  /// by the operating system; they do not promise immediate delivery.
+  static Future<void> syncBackgroundChecks() async {
+    if (!Platform.isAndroid) return;
+    await _configureBackground(await alertsEnabled());
+  }
+
+  static Future<void> _configureBackground(bool enabled) async {
+    if (!Platform.isAndroid) return;
+    try {
+      await _backgroundChannel.invokeMethod<void>('setEnabled', {'enabled': enabled});
+    } on MissingPluginException {
+      // Older host builds have no native notifier.
+    } on PlatformException {
+      // Foreground update checks stay usable even if background scheduling fails.
+    }
+  }
 
   /// User-controlled automatic update notice; enabled by default.
   static Future<bool> alertsEnabled() async {
@@ -104,6 +125,7 @@ class Updater {
   static Future<void> setAlertsEnabled(bool enabled) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_alertsKey, enabled);
+    await _configureBackground(enabled);
   }
 
   static Future<String> currentVersion() => AppVersion.name();
@@ -128,7 +150,6 @@ class Updater {
     if (!info.forced && snooze == '${info.latest}@$today') return;
     if (!context.mounted) return;
     await showUpdateDialog(context, info);
-    if (!info.forced) await prefs.setString(_snoozeKey, '${info.latest}@$today');
   }
 
   /// Manual check from settings.
@@ -165,7 +186,15 @@ class Updater {
             ]),
           ),
           actions: [
-            if (!info.forced) TextButton(onPressed: () => Navigator.pop(c), child: const Text('بعداً')),
+            if (!info.forced) TextButton(
+              onPressed: () async {
+                final prefs = await SharedPreferences.getInstance();
+                final today = DateTime.now().toIso8601String().substring(0, 10);
+                await prefs.setString(_snoozeKey, '${info.latest}@$today');
+                if (c.mounted) Navigator.pop(c);
+              },
+              child: const Text('بعداً'),
+            ),
             if (info.stores['bazaar'] != null) TextButton(onPressed: () => _open(info.stores['bazaar']!), child: const Text('کافه‌بازار')),
             if (info.stores['myket'] != null) TextButton(onPressed: () => _open(info.stores['myket']!), child: const Text('مایکت')),
             if (info.url.isNotEmpty)
