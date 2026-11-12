@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
+import 'app_version.dart';
 import 'auth_store.dart';
 import 'cache.dart';
 import 'config.dart';
@@ -32,7 +33,7 @@ class Api {
   }
 
   Future<Map<String, String>> _headers({bool authed = false, bool json = true}) async {
-    final h = <String, String>{'Accept': 'application/json'};
+    final h = <String, String>{'Accept': 'application/json', 'User-Agent': await AppVersion.userAgent()};
     if (json) h['Content-Type'] = 'application/json';
     if (authed && auth.isLoggedIn) {
       if (!auth.accessValid) await _refresh();

@@ -163,7 +163,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             builder: (_, v) => ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const KIcon('download'),
-              title: const Text('بررسی بروزرسانی'),
+              title: const Text('بروزرسانی اپ'),
               subtitle: Text('نسخهٔ نصب‌شده: ${faDigits(v.data ?? '…')}'),
               onTap: () {
                 final api = context.read<Api>();

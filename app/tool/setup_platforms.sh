@@ -12,6 +12,20 @@ add_perm android.permission.INTERNET
 add_perm android.permission.ACCESS_FINE_LOCATION
 add_perm android.permission.ACCESS_COARSE_LOCATION
 add_perm android.permission.CAMERA
+# In-app update: download the APK from the website and open the Android installer (ota_update).
+add_perm android.permission.REQUEST_INSTALL_PACKAGES
+grep -q OtaUpdateFileProvider "$MANIFEST" || sed -i 's#</application>#    <provider android:name="sk.fourq.otaupdate.OtaUpdateFileProvider" android:authorities="${applicationId}.ota_update_provider" android:exported="false" android:grantUriPermissions="true">\n            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/filepaths"/>\n        </provider>\n    </application>#' "$MANIFEST"
+mkdir -p android/app/src/main/res/xml
+cat > android/app/src/main/res/xml/filepaths.xml <<'XML'
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <files-path name="files" path="."/>
+    <cache-path name="cache" path="."/>
+    <external-files-path name="external_files" path="."/>
+    <external-cache-path name="external_cache" path="."/>
+    <external-path name="external" path="."/>
+</paths>
+XML
 # App label (Persian) and cleartext off.
 sed -i 's#android:label="[^"]*"#android:label="بشرویهٔ من"#' "$MANIFEST"
 grep -q usesCleartextTraffic "$MANIFEST" || sed -i 's#<application#<application android:usesCleartextTraffic="false"#' "$MANIFEST"
