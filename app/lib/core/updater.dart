@@ -88,6 +88,18 @@ int compareVersions(String a, String b) {
 
 class Updater {
   static const _snoozeKey = 'update_snooze';
+  static const _alertsKey = 'update_alerts_enabled';
+
+  /// User-controlled automatic update notice; enabled by default.
+  static Future<bool> alertsEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_alertsKey) ?? true;
+  }
+
+  static Future<void> setAlertsEnabled(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_alertsKey, enabled);
+  }
 
   static Future<String> currentVersion() => AppVersion.name();
 
@@ -102,6 +114,7 @@ class Updater {
 
   /// Called once on start: shows a dialog when a newer build exists (max once a day unless forced).
   static Future<void> checkOnStart(BuildContext context, Api api) async {
+    if (!await alertsEnabled()) return;
     final info = await fetch(api);
     if (info == null || !info.hasUpdate || !info.canDownload || !context.mounted) return;
     final prefs = await SharedPreferences.getInstance();
