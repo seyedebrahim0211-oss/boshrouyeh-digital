@@ -35,17 +35,20 @@ class ShellState extends State<Shell> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Notices are checked on launch, whenever the user returns to the app,
-    // and periodically while the app is open. No background polling is claimed.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _checkForUpdates());
-    _updateTimer = Timer.periodic(const Duration(minutes: 30), (_) => _checkForUpdates());
+    // Start the native Android periodic notifier, then check the website now.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(Updater.syncBackgroundChecks());
+      unawaited(_checkForUpdates());
+    });
+    // Also detect a newly uploaded APK while the app remains in the foreground.
+    _updateTimer = Timer.periodic(const Duration(minutes: 5), (_) => _checkForUpdates());
   }
 
   Future<void> _checkForUpdates() async {
     if (!mounted || !_foreground || _checking) return;
     final now = DateTime.now();
     if (_lastUpdateCheck != null &&
-        now.difference(_lastUpdateCheck!) < const Duration(minutes: 15)) {
+        now.difference(_lastUpdateCheck!) < const Duration(minutes: 4)) {
       return;
     }
     _lastUpdateCheck = now;
