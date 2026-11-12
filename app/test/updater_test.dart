@@ -41,6 +41,30 @@ void main() {
     expect(i.canInstallInApp, isTrue);
   });
 
+  test('empty stores array from WordPress does not break update check', () {
+    final i = UpdateInfo.fromJson({
+      'versionName': '1.0.25',
+      'versionCode': 25,
+      'apk': 'https://varsin-bsh.ir/wp-content/uploads/bmn-app/app-25.apk',
+      'stores': <dynamic>[],
+    }, current: '1.0.24', currentCode: 24);
+    expect(i.stores, isEmpty);
+    expect(i.hasUpdate, isTrue);
+    expect(i.canDownload, isTrue);
+  });
+
+  test('missing or malformed stores data is ignored safely', () {
+    for (final stores in [null, '', <dynamic>['unknown']]) {
+      final i = UpdateInfo.fromJson({
+        'versionName': '1.0.24',
+        'versionCode': 24,
+        'stores': stores,
+      }, current: '1.0.24', currentCode: 24);
+      expect(i.stores, isEmpty);
+      expect(i.hasUpdate, isFalse);
+    }
+  });
+
   test('build number wins over version name when both are known', () {
     final same = UpdateInfo.fromJson({'versionName': '1.0.42', 'versionCode': 42, 'apk': 'https://x/a.apk'}, current: '1.0.9', currentCode: 42);
     expect(same.hasUpdate, isFalse);
