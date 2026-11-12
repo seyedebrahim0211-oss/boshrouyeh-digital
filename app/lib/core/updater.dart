@@ -105,6 +105,18 @@ class Updater {
     await _configureBackground(await alertsEnabled());
   }
 
+  /// Returns true once when an Android background notification opens the app.
+  static Future<bool> consumeNotificationLaunch() async {
+    if (!Platform.isAndroid) return false;
+    try {
+      return await _backgroundChannel.invokeMethod<bool>('consumeUpdateTap') ?? false;
+    } on MissingPluginException {
+      return false;
+    } on PlatformException {
+      return false;
+    }
+  }
+
   static Future<void> _configureBackground(bool enabled) async {
     if (!Platform.isAndroid) return;
     try {
