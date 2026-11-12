@@ -19,13 +19,23 @@ mkdir -p android/app/src/main/res/xml
 cat > android/app/src/main/res/xml/filepaths.xml <<'XML'
 <?xml version="1.0" encoding="utf-8"?>
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <files-path name="files" path="."/>
-    <cache-path name="cache" path="."/>
-    <external-files-path name="external_files" path="."/>
-    <external-cache-path name="external_cache" path="."/>
-    <external-path name="external" path="."/>
+    <files-path name="internal_apk_storage" path="ota_update/"/>
 </paths>
 XML
+# ota_update 7.x needs: minSdk >= 23, compileSdk >= 36 and core library desugaring in the app module.
+GK=android/app/build.gradle.kts
+GG=android/app/build.gradle
+if [ -f "$GK" ] && ! grep -q 'bmn-ota' "$GK"; then
+  sed -i 's#compileSdk = flutter.compileSdkVersion#compileSdk = maxOf(36, flutter.compileSdkVersion)#' "$GK"
+  sed -i 's#minSdk = flutter.minSdkVersion#minSdk = maxOf(23, flutter.minSdkVersion)#' "$GK"
+  sed -i 's#compileOptions {#compileOptions {\n        isCoreLibraryDesugaringEnabled = true#' "$GK"
+  printf '\n// bmn-ota\ndependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")\n}\n' >> "$GK"
+elif [ -f "$GG" ] && ! grep -q 'bmn-ota' "$GG"; then
+  sed -i 's#compileSdk = flutter.compileSdkVersion#compileSdk = Math.max(36, flutter.compileSdkVersion)#; s#compileSdkVersion flutter.compileSdkVersion#compileSdkVersion Math.max(36, flutter.compileSdkVersion)#' "$GG"
+  sed -i 's#minSdk = flutter.minSdkVersion#minSdk = Math.max(23, flutter.minSdkVersion)#; s#minSdkVersion flutter.minSdkVersion#minSdkVersion Math.max(23, flutter.minSdkVersion)#' "$GG"
+  sed -i 's#compileOptions {#compileOptions {\n        coreLibraryDesugaringEnabled true#' "$GG"
+  printf '\n// bmn-ota\ndependencies {\n    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.4"\n}\n' >> "$GG"
+fi
 # App label (Persian) and cleartext off.
 sed -i 's#android:label="[^"]*"#android:label="بشرویهٔ من"#' "$MANIFEST"
 grep -q usesCleartextTraffic "$MANIFEST" || sed -i 's#<application#<application android:usesCleartextTraffic="false"#' "$MANIFEST"
