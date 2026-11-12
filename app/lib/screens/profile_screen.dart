@@ -8,9 +8,11 @@ import '../core/format.dart';
 import '../core/settings.dart';
 import '../core/updater.dart';
 import '../models/models.dart';
+import '../models/staff.dart';
 import '../theme/brand.dart';
 import '../widgets/brand_widgets.dart';
 import '../widgets/k_icon.dart';
+import 'admin_screen.dart';
 import 'login_screen.dart';
 import 'track_screen.dart';
 
@@ -30,7 +32,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final auth = context.read<AuthStore>();
     final r = await Future.wait([api.get('me', authed: true), api.get('me/requests', authed: true), api.get('me/payments', authed: true)]);
     final me = Map<String, dynamic>.from(r[0] as Map);
-    await auth.setUser({'id': me['id'], 'name': me['name'], 'phone': me['phone'], 'neighborhood': me['neighborhood']});
+    await auth.setUser({'id': me['id'], 'name': me['name'], 'phone': me['phone'], 'neighborhood': me['neighborhood'], 'staff': me['staff']});
     return (
       me,
       (r[1] as List).map((e) => RequestItem.fromJson(Map<String, dynamic>.from(e as Map))).toList(),
@@ -67,6 +69,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ]),
                 ),
               ]),
+              if (StaffInfo.fromJson(me['staff']).isStaff) ...[
+                const SizedBox(height: 12),
+                Material(
+                  color: Brand.night,
+                  borderRadius: BorderRadius.circular(16),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => AdminScreen(staff: StaffInfo.fromJson(me['staff'])))),
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Row(children: [
+                        const KIcon('shield', color: Brand.sun, size: 28),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text('پنل مدیریت', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white)),
+                            Text(StaffInfo.fromJson(me['staff']).role, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Brand.kahgel)),
+                          ]),
+                        ),
+                        const Icon(Icons.chevron_left, color: Colors.white),
+                      ]),
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 14),
               Row(children: [
                 _stat(context, 'پرونده', stats['requests']),
