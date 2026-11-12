@@ -2,6 +2,7 @@ package ir.boshrooyeh.boshrouyeh_man
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.content.ContextCompat
@@ -22,9 +23,19 @@ class MainActivity : FlutterActivity() {
                     if (enabled) requestNotificationPermissionOnce()
                     result.success(true)
                 }
+                "consumeUpdateTap" -> {
+                    val tapped = intent?.getBooleanExtra("bmn_open_update", false) ?: false
+                    if (tapped) intent?.removeExtra("bmn_open_update")
+                    result.success(tapped)
+                }
                 else -> result.notImplemented()
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
     }
 
     private fun requestNotificationPermissionOnce() {
