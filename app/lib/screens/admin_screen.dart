@@ -4,12 +4,12 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../core/api.dart';
 import '../core/auth_store.dart';
-import '../core/config.dart';
 import '../core/format.dart';
 import '../models/staff.dart';
 import '../theme/brand.dart';
 import '../widgets/brand_widgets.dart';
 import '../widgets/k_icon.dart';
+import 'admin_web_screen.dart';
 
 /// «پنل مدیریت» for staff signed in to the app: key numbers, PR approvals, quick links.
 /// Every action is re-checked on the server with the staff member's own capabilities.
@@ -84,7 +84,8 @@ class _AdminScreenState extends State<AdminScreen> {
     if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
   }
 
-  void _open(String path) => launchUrl(Uri.parse('${AppConfig.siteUrl}$path'), mode: LaunchMode.externalApplication);
+  void _section(StaffSection sec) =>
+      Navigator.push(context, MaterialPageRoute<void>(builder: (_) => AdminWebScreen(title: sec.label, path: sec.path)));
 
   @override
   Widget build(BuildContext context) {
@@ -156,17 +157,66 @@ class _AdminScreenState extends State<AdminScreen> {
                     ),
                   ),
               ],
-              const SizedBox(height: 18),
-              const SectionTitle('دسترسی سریع'),
-              Wrap(spacing: 8, runSpacing: 8, children: [
-                OutlinedButton.icon(onPressed: () => _open('/wp-admin/'), icon: const KIcon('home', size: 18), label: const Text('پیشخوان سایت')),
-                if (s.canRequests) OutlinedButton.icon(onPressed: () => _open('/wp-admin/edit.php?post_type=bmn_request'), icon: const KIcon('doc-check', size: 18), label: const Text('میز درخواست‌ها')),
-                if (s.canApprove) OutlinedButton.icon(onPressed: () => _open('/wp-admin/post-new.php'), icon: const KIcon('plus', size: 18), label: const Text('خبر تازه')),
-                if (s.canSms) OutlinedButton.icon(onPressed: () => _open('/wp-admin/admin.php?page=bmnm-sms'), icon: const KIcon('mail', size: 18), label: const Text('پیامک گروهی')),
-                if (s.canPayments) OutlinedButton.icon(onPressed: () => _open('/wp-admin/admin.php?page=bmn-payments'), icon: const KIcon('payment', size: 18), label: const Text('پرداخت‌ها')),
-              ]),
+              if (sum.sections.any((x) => x.isFullDashboard)) ...[
+                const SizedBox(height: 18),
+                Material(
+                  color: Brand.qanat,
+                  borderRadius: BorderRadius.circular(16),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () => _section(sum.sections.firstWhere((x) => x.isFullDashboard)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(children: [
+                        const KIcon('home', color: Colors.white, size: 30),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text('پیشخوان کامل وردپرس', style: t.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w800)),
+                            Text('همهٔ بخش‌های مدیریت سایت، داخل همین اپ', style: t.bodySmall?.copyWith(color: Colors.white70)),
+                          ]),
+                        ),
+                        const Icon(Icons.chevron_left, color: Colors.white),
+                      ]),
+                    ),
+                  ),
+                ),
+              ],
+              for (final g in StaffSection.grouped(sum.sections).entries) ...[
+                const SizedBox(height: 18),
+                SectionTitle(g.key),
+                GridView.count(
+                  crossAxisCount: 2,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                  childAspectRatio: 1.9,
+                  children: [
+                    for (final sec in g.value)
+                      Material(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(Brand.radiusCard),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(Brand.radiusCard),
+                          onTap: () => _section(sec),
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(borderRadius: BorderRadius.circular(Brand.radiusCard), border: Border.all(color: Brand.line)),
+                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
+                              KIcon(sec.icon, color: Brand.qanat, size: 22),
+                              const SizedBox(height: 4),
+                              Text(sec.label, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                              Text(sec.desc, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.bodySmall),
+                            ]),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 22),
-              Text('برای امنیت: ورود مدیر در اپ ۷ روز اعتبار دارد و حداکثر روی ۲ گوشی فعال است. کارهای حساس فقط از پیشخوان سایت انجام می‌شود.', style: t.bodySmall),
+              Text('برای امنیت: ورود مدیر در اپ ۷ روز اعتبار دارد و حداکثر روی ۲ گوشی فعال است. هر بخش با دسترسی‌های خود شما باز می‌شود.', style: t.bodySmall),
               const SizedBox(height: 8),
               TextButton.icon(onPressed: _revokeAll, icon: const KIcon('logout', size: 18, color: Brand.brick), label: const Text('خروج از همهٔ دستگاه‌ها', style: TextStyle(color: Brand.brick))),
               if (sum.appVersion.isNotEmpty) Text('نسخهٔ منتشرشدهٔ اپ روی سایت: ${faDigits(sum.appVersion)}', style: t.bodySmall),

@@ -20,6 +20,22 @@ void main() {
     expect(s.canSms, isTrue);
   });
 
+  test('sections from server are grouped; full dashboard kept apart', () {
+    final list = StaffSection.listFrom([
+      {'key': 'wp', 'label': 'پیشخوان کامل وردپرس', 'icon': 'home', 'path': '', 'group': 'مدیر کل'},
+      {'key': 'pr', 'label': 'میز روابط عمومی', 'icon': 'bell', 'path': 'admin.php?page=bmnm-hub', 'group': 'روابط عمومی'},
+      {'key': 'news', 'label': 'خبر تازه', 'icon': 'plus', 'path': 'post-new.php', 'group': 'روابط عمومی'},
+      {'key': 'requests', 'label': 'درخواست‌ها', 'icon': '137', 'path': 'edit.php?post_type=bmn_request', 'group': 'رسیدگی'},
+      'bad',
+    ]);
+    expect(list.length, 4);
+    expect(list.first.isFullDashboard, isTrue);
+    final g = StaffSection.grouped(list);
+    expect(g.keys.toList(), ['روابط عمومی', 'رسیدگی']);
+    expect(g['روابط عمومی']!.map((s) => s.key), ['pr', 'news']);
+    expect(StaffInfo.fromJson({'is_staff': true, 'caps': {'admin': true}}).canAdmin, isTrue);
+  });
+
   test('admin summary and pending items', () {
     final sum = AdminSummary.fromJson({
       'tiles': [
