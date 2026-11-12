@@ -1,18 +1,31 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:package_info_plus/package_info_plus.dart';
+import 'package:ota_update/ota_update.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../theme/brand.dart';
 import '../widgets/brand_widgets.dart';
 import 'api.dart';
+import 'app_version.dart';
 import 'format.dart';
 
 /// Info returned by GET /bmn/v1/app/version.
 class UpdateInfo {
-  UpdateInfo({required this.current, required this.latest, required this.min, required this.url, required this.notes, required this.stores});
+  UpdateInfo({
+    required this.current,
+    required this.latest,
+    required this.min,
+    required this.url,
+    required this.notes,
+    required this.stores,
+    this.currentCode = 0,
+    this.latestCode = 0,
+    this.sha256 = '',
+    this.size = 0,
+  });
   final String current;
   final String latest;
   final String min;
@@ -20,7 +33,44 @@ class UpdateInfo {
   final String notes;
   final Map<String, String> stores;
 
-  bool get hasUpdate => latest.isNotEmpty && compareVersions(latest, current) > 0;
+  /// Build numbers (Android versionCode); 0 = unknown, then version names are compared.
+  final int currentCode;
+  final int latestCode;
+
+  /// SHA-256 of the APK on the site (verified after download when present).
+  final String sha256;
+  final int size;
+
+  /// Parses the server response (new fields first, older ones as fallback).
+  factory UpdateInfo.fromJson(Map<String, dynamic> d, {required String current, int currentCode = 0}) {
+    final stores = <String, String>{};
+    (d['stores'] as Map? ?? const {}).forEach((k, v) {
+      if ('$v'.isNotEmpty) stores['$k'] = '$v';
+    });
+    String s(String k) => d[k] == null ? '' : '${d[k]}';
+    final apk = s('apk').isNotEmpty ? s('apk') : s('url');
+    final latest = s('versionName').isNotEmpty ? s('versionName') : s('latest');
+    return UpdateInfo(
+      current: current,
+      currentCode: currentCode,
+      latest: latest,
+      latestCode: int.tryParse(s('versionCode')) ?? 0,
+      min: s('min'),
+      url: apk,
+      notes: s('notes'),
+      stores: stores,
+      sha256: RegExp(r'^[a-fA-F0-9]{64}$').hasMatch(s('sha256')) ? s('sha256').toLowerCase() : '',
+      size: int.tryParse(s('size')) ?? 0,
+    );
+  }
+
+  bool get hasUpdate {
+    if (latestCode > 0 && currentCode > 0) return latestCode > currentCode;
+    return latest.isNotEmpty && compareVersions(latest, current) > 0;
+  }
+
+  /// The APK can be downloaded and installed inside the app (Android, https link).
+  bool get canInstallInApp => url.startsWith('https://');
   bool get forced => min.isNotEmpty && compareVersions(min, current) > 0;
   bool get canDownload => url.isNotEmpty || stores.isNotEmpty;
 }
@@ -39,21 +89,12 @@ int compareVersions(String a, String b) {
 class Updater {
   static const _snoozeKey = 'update_snooze';
 
-  static Future<String> currentVersion() async => (await PackageInfo.fromPlatform()).version;
+  static Future<String> currentVersion() => AppVersion.name();
 
   static Future<UpdateInfo?> fetch(Api api) async {
     try {
       final d = Map<String, dynamic>.from(await api.get('app/version', query: {'platform': Platform.isIOS ? 'ios' : 'android'}) as Map);
-      final stores = <String, String>{};
-      (d['stores'] as Map? ?? const {}).forEach((k, v) => stores['$k'] = '$v');
-      return UpdateInfo(
-        current: await currentVersion(),
-        latest: '${d['latest'] ?? ''}',
-        min: '${d['min'] ?? ''}',
-        url: '${d['url'] ?? ''}',
-        notes: '${d['notes'] ?? ''}',
-        stores: stores,
-      );
+      return UpdateInfo.fromJson(d, current: await currentVersion(), currentCode: await AppVersion.code());
     } catch (_) {
       return null;
     }
@@ -109,11 +150,104 @@ class Updater {
             if (!info.forced) TextButton(onPressed: () => Navigator.pop(c), child: const Text('بعداً')),
             if (info.stores['bazaar'] != null) TextButton(onPressed: () => _open(info.stores['bazaar']!), child: const Text('کافه‌بازار')),
             if (info.stores['myket'] != null) TextButton(onPressed: () => _open(info.stores['myket']!), child: const Text('مایکت')),
-            if (info.url.isNotEmpty) FilledButton(onPressed: () => _open(info.url), child: const Text('دانلود و نصب')),
+            if (info.url.isNotEmpty)
+              FilledButton(
+                onPressed: () {
+                  if (!info.forced) Navigator.pop(c);
+                  install(context, info);
+                },
+                child: Text(info.size > 0 ? 'بروزرسانی (${faDigits((info.size / 1048576).toStringAsFixed(1))} مگ)' : 'بروزرسانی'),
+              ),
           ],
         ),
       ),
     );
+  }
+
+  /// Downloads the APK inside the app (progress bar + SHA-256 check) and opens the Android
+  /// installer. Falls back to the browser when in-app install is not possible.
+  static Future<void> install(BuildContext context, UpdateInfo info) async {
+    if (!Platform.isAndroid || !info.canInstallInApp) {
+      await _open(info.url);
+      return;
+    }
+    final status = ValueNotifier<String>('در حال آماده‌سازی…');
+    final pct = ValueNotifier<double?>(null);
+    final failed = ValueNotifier<bool>(false);
+    StreamSubscription<OtaEvent>? sub;
+    var open = true;
+    void close(BuildContext c) {
+      if (open && Navigator.of(c).canPop()) Navigator.of(c).pop();
+      open = false;
+    }
+
+    unawaited(showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (c) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          title: Text('دریافت نسخهٔ ${faDigits(info.latest)}'),
+          content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            ValueListenableBuilder<double?>(valueListenable: pct, builder: (_, v, __) => LinearProgressIndicator(value: v, minHeight: 8, borderRadius: BorderRadius.circular(8))),
+            const SizedBox(height: 12),
+            ValueListenableBuilder<String>(valueListenable: status, builder: (_, v, __) => Text(v, style: const TextStyle(height: 1.7))),
+          ]),
+          actions: [
+            ValueListenableBuilder<bool>(
+              valueListenable: failed,
+              builder: (_, f, __) => f
+                  ? TextButton(onPressed: () { close(c); _open(info.url); }, child: const Text('دانلود با مرورگر'))
+                  : const SizedBox.shrink(),
+            ),
+            TextButton(
+              onPressed: () {
+                sub?.cancel();
+                try {
+                  OtaUpdate().cancel();
+                } catch (_) {}
+                close(c);
+              },
+              child: const Text('بستن'),
+            ),
+          ],
+        ),
+      ),
+    ).then((_) => open = false));
+
+    void fail(String msg) {
+      status.value = msg;
+      pct.value = 0;
+      failed.value = true;
+    }
+
+    try {
+      sub = OtaUpdate()
+          .execute(info.url, destinationFilename: 'boshrouyeh-${info.latestCode > 0 ? info.latestCode : info.latest}.apk', sha256checksum: info.sha256.isEmpty ? null : info.sha256)
+          .listen((e) {
+        switch (e.status) {
+          case OtaStatus.DOWNLOADING:
+            final v = double.tryParse(e.value ?? '');
+            pct.value = v == null ? null : (v / 100).clamp(0, 1).toDouble();
+            status.value = 'در حال دانلود… ${faDigits('${v?.round() ?? 0}')}٪';
+            break;
+          case OtaStatus.INSTALLING:
+            pct.value = 1;
+            status.value = 'دانلود کامل شد. در پنجرهٔ اندروید «نصب» یا «بروزرسانی» را بزنید.';
+            break;
+          case OtaStatus.PERMISSION_NOT_GRANTED_ERROR:
+            fail('اجازهٔ نصب داده نشد. در تنظیمات گوشی، «نصب برنامه‌های ناشناس» را برای «بشرویهٔ من» فعال کنید و دوباره بروزرسانی را بزنید.');
+            break;
+          case OtaStatus.CHECKSUM_ERROR:
+            fail('فایل دانلودشده سالم نیست (هش یکسان نیست). دوباره تلاش کنید.');
+            break;
+          default:
+            fail('دانلود انجام نشد. اتصال اینترنت را بررسی کنید یا با مرورگر دانلود کنید.');
+        }
+      }, onError: (_) => fail('دانلود انجام نشد. اتصال اینترنت را بررسی کنید یا با مرورگر دانلود کنید.'));
+    } catch (_) {
+      fail('بروزرسانی درون‌برنامه‌ای ممکن نشد؛ با مرورگر دانلود کنید.');
+    }
   }
 
   static Future<void> _open(String url) async {
