@@ -149,7 +149,7 @@ class BMN_App_Update {
 				'url'       => esc_url_raw( $url ),
 				'notes'     => mb_substr( $notes, 0, 1500 ),
 				'published' => $pub,
-				'stores'    => $stores,
+				'stores'    => (object) $stores,
 			)
 		);
 		$res->header( 'Cache-Control', 'public, max-age=600' );
