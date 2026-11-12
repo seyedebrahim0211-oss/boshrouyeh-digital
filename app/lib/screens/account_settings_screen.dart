@@ -199,7 +199,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     ),
   );
 
-  Widget _securityPanel() {
+  Widget _securityPanel({VoidCallback? onRefresh}) {
     return FutureBuilder<Map<String, dynamic>>(
       future: _security,
       builder: (context, snap) {
@@ -208,7 +208,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             icon: Icons.wifi_off_rounded,
             title: 'دریافت اطلاعات امنیت حساب ممکن نشد',
             subtitle: 'اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.',
-            onTap: _reloadSecurity,
+            onTap: onRefresh ?? _reloadSecurity,
           );
         }
         if (!snap.hasData) {
@@ -238,7 +238,10 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   title: '${entry['device'] ?? 'دستگاه ناشناس'}${entry['current'] == true ? ' · این گوشی' : ''}',
                   subtitle: 'آخرین فعالیت: ${_date(entry['last_seen'])}\nورود: ${_date(entry['signed_in'])}',
                   trailing: TextButton(
-                    onPressed: _busy ? null : () => _revokeSession(entry),
+                    onPressed: _busy ? null : () async {
+                      await _revokeSession(entry);
+                      if (mounted) onRefresh?.call();
+                    },
                     child: const Text('خروج'),
                   ),
                 ),
@@ -262,7 +265,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             Align(
               alignment: AlignmentDirectional.centerStart,
               child: TextButton.icon(
-                onPressed: _reloadSecurity,
+                onPressed: onRefresh ?? _reloadSecurity,
                 icon: const Icon(Icons.refresh_rounded),
                 label: const Text('تازه‌سازی دستگاه‌ها و ورودها'),
               ),
@@ -278,28 +281,44 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   Future<void> _openSecurity() async {
     _reloadSecurity();
     await Navigator.push<void>(context, MaterialPageRoute(
-      builder: (context) => Scaffold(
-        appBar: AppBar(
-          title: const Text('حساب و امنیت'),
-          actions: [
-            IconButton(
-              tooltip: 'تازه‌سازی',
-              onPressed: _reloadSecurity,
-              icon: const Icon(Icons.refresh_rounded),
+      builder: (routeContext) => StatefulBuilder(
+        builder: (routeContext, redraw) {
+          void refresh() {
+            _reloadSecurity();
+            if (routeContext.mounted) redraw(() {});
+          }
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('حساب و امنیت'),
+              actions: [
+                IconButton(
+                  tooltip: 'تازه‌سازی',
+                  onPressed: refresh,
+                  icon: const Icon(Icons.refresh_rounded),
+                ),
+              ],
             ),
-          ],
-        ),
-        body: SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
-            children: [
-              Center(child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 720),
-                child: _securityPanel(),
-              )),
-            ],
-          ),
-        ),
+            body: SafeArea(
+              child: RefreshIndicator(
+                color: Brand.qanat,
+                onRefresh: () async {
+                  refresh();
+                  try { await _security; } catch (_) {}
+                },
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
+                  children: [
+                    Center(child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 720),
+                      child: _securityPanel(onRefresh: refresh),
+                    )),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     ));
   }
