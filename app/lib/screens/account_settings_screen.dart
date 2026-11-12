@@ -221,9 +221,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         }
         final data = snap.data!;
         final sessions = (data['sessions'] as List? ?? const [])
-            .whereType<Map>().map((row) => Map<String, dynamic>.from(row)).toList();
+            .whereType<Map<dynamic, dynamic>>().map((row) => Map<String, dynamic>.from(row)).toList();
         final recent = (data['recent_logins'] as List? ?? const [])
-            .whereType<Map>().map((row) => Map<String, dynamic>.from(row)).take(10).toList();
+            .whereType<Map<dynamic, dynamic>>().map((row) => Map<String, dynamic>.from(row)).take(10).toList();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
