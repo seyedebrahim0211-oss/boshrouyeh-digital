@@ -19,14 +19,18 @@ MARK = "// bmn-signing"
 if kts.exists():
     s = kts.read_text(encoding="utf-8")
     if MARK not in s:
+        # Inside a Gradle Kotlin script `java` resolves to the java extension, so `java.util.Properties`
+        # does not compile on current AGP; import the class at the top of the file instead.
         loader = (
             f"{MARK}\n"
-            "val bmnKeyProps = java.util.Properties().apply {\n"
+            "val bmnKeyProps = Properties().apply {\n"
             "    val f = rootProject.file(\"key.properties\")\n"
-            "    if (f.exists()) f.inputStream().use { load(it) }\n"
+            "    if (f.exists()) FileInputStream(f).use { stream -> load(stream) }\n"
             "}\n\n"
         )
         s = s.replace("android {", loader + "android {", 1)
+        if "import java.util.Properties" not in s:
+            s = "import java.io.FileInputStream\nimport java.util.Properties\n\n" + s
         cfg = (
             "    signingConfigs {\n"
             "        create(\"release\") {\n"
