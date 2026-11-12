@@ -44,9 +44,14 @@ class UpdateInfo {
   /// Parses the server response (new fields first, older ones as fallback).
   factory UpdateInfo.fromJson(Map<String, dynamic> d, {required String current, int currentCode = 0}) {
     final stores = <String, String>{};
-    (d['stores'] as Map? ?? const {}).forEach((k, v) {
-      if ('$v'.isNotEmpty) stores['$k'] = '$v';
-    });
+    // WordPress can encode an empty PHP array as [] instead of {}.
+    // Ignore that legacy form rather than failing the entire update check.
+    final rawStores = d['stores'];
+    if (rawStores is Map) {
+      rawStores.forEach((k, v) {
+        if (v != null && '$v'.trim().isNotEmpty) stores['$k'] = '$v';
+      });
+    }
     String s(String k) => d[k] == null ? '' : '${d[k]}';
     final apk = s('apk').isNotEmpty ? s('apk') : s('url');
     final latest = s('versionName').isNotEmpty ? s('versionName') : s('latest');
