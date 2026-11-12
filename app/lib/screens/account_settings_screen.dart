@@ -273,150 +273,206 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     );
   }
 
+  /// Open security as a separate screen instead of rendering every session
+  /// and login on the main settings page.
+  Future<void> _openSecurity() async {
+    _reloadSecurity();
+    await Navigator.push<void>(context, MaterialPageRoute(
+      builder: (context) => Scaffold(
+        appBar: AppBar(
+          title: const Text('حساب و امنیت'),
+          actions: [
+            IconButton(
+              tooltip: 'تازه‌سازی',
+              onPressed: _reloadSecurity,
+              icon: const Icon(Icons.refresh_rounded),
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
+            children: [
+              Center(child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: _securityPanel(),
+              )),
+            ],
+          ),
+        ),
+      ),
+    ));
+  }
+
+  Widget _group(Widget child) => Card(
+    margin: const EdgeInsets.only(bottom: 4),
+    child: child,
+  );
+
+  Widget _row({
+    required IconData icon,
+    required String label,
+    String? detail,
+    VoidCallback? onTap,
+    bool danger = false,
+    Widget? trailing,
+  }) => ListTile(
+    contentPadding: const EdgeInsetsDirectional.fromSTEB(16, 6, 12, 6),
+    leading: Icon(icon, color: danger ? Brand.brick : Brand.qanat, size: 23),
+    title: Text(label, softWrap: true,
+      style: TextStyle(fontWeight: FontWeight.w700, color: danger ? Brand.brick : null)),
+    subtitle: detail == null ? null : Text(detail, maxLines: 2,
+      overflow: TextOverflow.ellipsis, softWrap: true),
+    trailing: trailing ?? (onTap == null ? null : const Icon(Icons.chevron_left_rounded, size: 20)),
+    onTap: onTap,
+  );
+
+  Widget _accountCard(AuthStore auth) {
+    final isLoggedIn = auth.isLoggedIn;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+        child: Row(children: [
+          Container(
+            width: 58, height: 64,
+            decoration: const BoxDecoration(color: Brand.tint, borderRadius: Brand.taqche),
+            child: const Center(child: Icon(Icons.person_outline_rounded,
+              size: 30, color: Brand.brick)),
+          ),
+          const SizedBox(width: 13),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(isLoggedIn ? auth.displayName : 'حساب مهمان',
+              maxLines: 2, overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 3),
+            Text(isLoggedIn ? 'مدیریت اطلاعات شخصی و امنیت' : 'تنظیمات عمومی برنامه',
+              style: Theme.of(context).textTheme.bodySmall),
+          ])),
+          if (isLoggedIn)
+            IconButton(
+              tooltip: 'ویرایش نام نمایشی',
+              onPressed: _busy ? null : _changeName,
+              icon: const Icon(Icons.edit_outlined)),
+        ]),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthStore>();
     final settings = context.watch<AppSettings>();
-    final isLoggedIn = auth.isLoggedIn;
+    final loggedIn = auth.isLoggedIn;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('تنظیمات و امنیت حساب'),
-        actions: [
-          IconButton(
-            tooltip: 'تازه‌سازی اطلاعات حساب',
-            onPressed: isLoggedIn ? _reloadSecurity : null,
-            icon: const Icon(Icons.refresh_rounded),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('تنظیمات')),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 32),
-          children: [
-            Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 760),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    NightPanel(
-                      child: Row(children: [
-                        const Icon(Icons.shield_outlined, size: 40, color: Brand.sun),
-                        const SizedBox(width: 14),
-                        Expanded(child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('حریم خصوصی شما مهم است',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white)),
-                            const SizedBox(height: 5),
-                            Text('امنیت حساب، دستگاه‌های متصل و تنظیمات اپ در یک جا',
-                              softWrap: true,
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Brand.milk)),
-                          ],
-                        )),
-                      ]),
-                    ),
-                    _heading('حساب کاربری'),
-                    if (isLoggedIn) ...[
-                      _item(
-                        icon: Icons.account_circle_outlined,
-                        title: auth.displayName,
-                        subtitle: 'نام نمایشی حساب شما',
-                        onTap: _changeName,
-                      ),
-                    ] else
-                      _item(
-                        icon: Icons.login_rounded,
-                        title: 'برای نمایش دستگاه‌های متصل وارد حساب شوید',
-                        subtitle: 'ورود به حساب از بخش «من» امکان‌پذیر است.',
-                      ),
-                    _heading('ظاهر اپلیکیشن'),
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('حالت نمایش', style: TextStyle(fontWeight: FontWeight.w700)),
-                            const SizedBox(height: 12),
-                            Wrap(
-                              spacing: 8, runSpacing: 8,
-                              children: [
-                                ChoiceChip(
-                                  label: const Text('روشن'), avatar: const Icon(Icons.wb_sunny_outlined, size: 18),
-                                  selected: settings.themeMode == ThemeMode.light,
-                                  onSelected: (_) => settings.setTheme(ThemeMode.light),
-                                ),
-                                ChoiceChip(
-                                  label: const Text('خودکار'), avatar: const Icon(Icons.brightness_auto_outlined, size: 18),
-                                  selected: settings.themeMode == ThemeMode.system,
-                                  onSelected: (_) => settings.setTheme(ThemeMode.system),
-                                ),
-                                ChoiceChip(
-                                  label: const Text('شب کویر'), avatar: const Icon(Icons.nights_stay_outlined, size: 18),
-                                  selected: settings.themeMode == ThemeMode.dark,
-                                  onSelected: (_) => settings.setTheme(ThemeMode.dark),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    _heading('بروزرسانی برنامه'),
-                    Card(
-                      child: SwitchListTile.adaptive(
-                        secondary: const Icon(Icons.notifications_active_outlined, color: Brand.qanat),
-                        title: const Text('اعلان نسخهٔ جدید', style: TextStyle(fontWeight: FontWeight.w700)),
-                        subtitle: const Text('بررسی خودکار هنگام بازکردن یا بازگشت به اپ'),
-                        value: _updateAlerts,
-                        onChanged: (enabled) async {
-                          setState(() => _updateAlerts = enabled);
-                          await Updater.setAlertsEnabled(enabled);
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 9),
-                    FutureBuilder<String>(
-                      future: Updater.currentVersion(),
-                      builder: (context, version) => _item(
-                        icon: Icons.system_update_rounded,
-                        title: 'بررسی و نصب بروزرسانی',
-                        subtitle: 'نسخهٔ نصب‌شده: ${faDigits(version.data ?? '…')}',
-                        onTap: () => Updater.checkManually(context, context.read<Api>()),
-                      ),
-                    ),
-                    if (isLoggedIn) _securityPanel(),
-                    _heading('حریم خصوصی و راهنما'),
-                    _item(
-                      icon: Icons.privacy_tip_outlined,
-                      title: 'سیاست حریم خصوصی شهرداری',
-                      subtitle: 'نحوه استفاده از اطلاعات حساب و خدمات شهروندی',
-                      onTap: () => launchUrl(
-                        Uri.parse('https://varsin-bsh.ir/privacy/'),
-                        mode: LaunchMode.externalApplication,
-                      ),
-                    ),
-                    _item(
-                      icon: Icons.lock_outline_rounded,
-                      title: 'اطلاعات ورود و امنیت',
-                      subtitle: 'رمز یک‌بارمصرف پیامکی است؛ اطلاعات نشست‌ها فقط برای صاحب حساب نمایش داده می‌شود.',
-                    ),
-                    if (isLoggedIn) ...[
-                      const SizedBox(height: 14),
-                      _item(
-                        icon: Icons.logout_rounded,
-                        title: 'خروج از این گوشی',
-                        subtitle: 'تنها نشست فعلی برنامه پایان می‌یابد.',
-                        iconColor: Brand.brick,
-                        onTap: _busy ? null : _signOut,
-                      ),
-                    ],
-                  ],
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          children: [Center(child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 760),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              _accountCard(auth),
+              if (loggedIn) ...[
+                _heading('حساب و حریم خصوصی'),
+                _group(Column(children: [
+                  _row(icon: Icons.account_circle_outlined,
+                    label: 'ویرایش مشخصات', detail: 'نام نمایشی حساب',
+                    onTap: _busy ? null : _changeName),
+                  const Divider(height: 1, indent: 16, endIndent: 16),
+                  _row(icon: Icons.phonelink_lock_outlined,
+                    label: 'دستگاه‌ها و ورودهای اخیر',
+                    detail: 'نشست‌های فعال، تاریخچه ورود و خروج دستگاه‌ها',
+                    onTap: _busy ? null : _openSecurity),
+                  const Divider(height: 1, indent: 16, endIndent: 16),
+                  _row(icon: Icons.privacy_tip_outlined,
+                    label: 'حریم خصوصی',
+                    detail: 'شیوه محافظت و استفاده از اطلاعات',
+                    onTap: () => launchUrl(Uri.parse('https://varsin-bsh.ir/privacy/'),
+                      mode: LaunchMode.externalApplication)),
+                ])),
+              ],
+              _heading('ظاهر برنامه'),
+              _group(Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const Text('حالت نمایش', style: TextStyle(fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 10),
+                  Wrap(spacing: 8, runSpacing: 8, children: [
+                    ChoiceChip(
+                      label: const Text('روشن'),
+                      selected: settings.themeMode == ThemeMode.light,
+                      onSelected: (_) => settings.setTheme(ThemeMode.light)),
+                    ChoiceChip(
+                      label: const Text('خودکار'),
+                      selected: settings.themeMode == ThemeMode.system,
+                      onSelected: (_) => settings.setTheme(ThemeMode.system)),
+                    ChoiceChip(
+                      label: const Text('شب کویر'),
+                      selected: settings.themeMode == ThemeMode.dark,
+                      onSelected: (_) => settings.setTheme(ThemeMode.dark)),
+                  ]),
+                ]),
+              )),
+              _heading('اعلان و بروزرسانی'),
+              _group(Column(children: [
+                SwitchListTile.adaptive(
+                  contentPadding: const EdgeInsetsDirectional.fromSTEB(16, 4, 10, 4),
+                  secondary: const Icon(Icons.notifications_active_outlined,
+                    color: Brand.qanat),
+                  title: const Text('اعلان نسخه جدید',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
+                  subtitle: const Text('هنگام بازکردن اپ و بررسی دوره‌ای در پس‌زمینه'),
+                  value: _updateAlerts,
+                  onChanged: (enabled) async {
+                    setState(() => _updateAlerts = enabled);
+                    await Updater.setAlertsEnabled(enabled);
+                  },
                 ),
-              ),
-            ),
-          ],
+                const Divider(height: 1, indent: 16, endIndent: 16),
+                FutureBuilder<String>(
+                  future: Updater.currentVersion(),
+                  builder: (context, version) => _row(
+                    icon: Icons.system_update_rounded,
+                    label: 'بررسی و نصب بروزرسانی',
+                    detail: 'نسخه نصب‌شده: ' + faDigits(version.data ?? '…'),
+                    onTap: () => Updater.checkManually(context, context.read<Api>()),
+                  ),
+                ),
+              ])),
+              _heading('راهنما و پشتیبانی'),
+              _group(Column(children: [
+                _row(icon: Icons.help_outline_rounded,
+                  label: 'راهنما و خدمات شهرداری',
+                  detail: 'مراجعه به درگاه خدمات الکترونیک',
+                  onTap: () => launchUrl(Uri.parse('https://varsin-bsh.ir/'),
+                    mode: LaunchMode.externalApplication)),
+                const Divider(height: 1, indent: 16, endIndent: 16),
+                _row(icon: Icons.info_outline_rounded,
+                  label: 'درباره برنامه',
+                  detail: 'بشرویه من · سامانه شهروندی شهرداری بشرویه',
+                  onTap: () => showAboutDialog(
+                    context: context, applicationName: 'بشرویه من',
+                    applicationVersion: 'اپ خدمات الکترونیک شهرداری',
+                    children: [const Text('برای دریافت نسخه‌های تازه از بخش بروزرسانی استفاده کنید.')],
+                  )),
+              ])),
+              if (loggedIn) ...[
+                const SizedBox(height: 18),
+                _group(_row(
+                  icon: Icons.logout_rounded,
+                  label: 'خروج از حساب این گوشی',
+                  danger: true,
+                  onTap: _busy ? null : _signOut)),
+              ] else ...[
+                const SizedBox(height: 12),
+                _group(_row(
+                  icon: Icons.privacy_tip_outlined,
+                  label: 'سیاست حریم خصوصی',
+                  onTap: () => launchUrl(Uri.parse('https://varsin-bsh.ir/privacy/'),
+                    mode: LaunchMode.externalApplication))),
+              ],
+            ]),
+          ))],
         ),
       ),
     );
