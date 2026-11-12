@@ -46,15 +46,23 @@ class ShellState extends State<Shell> with WidgetsBindingObserver {
 
   Future<void> _checkForUpdates() async {
     if (!mounted || !_foreground || _checking) return;
-    final now = DateTime.now();
-    if (_lastUpdateCheck != null &&
-        now.difference(_lastUpdateCheck!) < const Duration(minutes: 4)) {
-      return;
-    }
-    _lastUpdateCheck = now;
     _checking = true;
     try {
-      await Updater.checkOnStart(context, context.read<Api>());
+      // A system notification tap must bypass throttling and the "Later" snooze.
+      final fromNotification = await Updater.consumeNotificationLaunch();
+      if (!mounted || !_foreground) return;
+      final now = DateTime.now();
+      if (!fromNotification &&
+          _lastUpdateCheck != null &&
+          now.difference(_lastUpdateCheck!) < const Duration(minutes: 4)) {
+        return;
+      }
+      _lastUpdateCheck = now;
+      if (fromNotification) {
+        await Updater.checkManually(context, context.read<Api>());
+      } else {
+        await Updater.checkOnStart(context, context.read<Api>());
+      }
     } finally {
       _checking = false;
     }
