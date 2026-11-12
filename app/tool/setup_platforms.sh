@@ -14,6 +14,8 @@ add_perm android.permission.ACCESS_COARSE_LOCATION
 add_perm android.permission.CAMERA
 # In-app update: download the APK from the website and open the Android installer (ota_update).
 add_perm android.permission.REQUEST_INSTALL_PACKAGES
+# Background release notifications on Android 13+ are opt-in at runtime.
+add_perm android.permission.POST_NOTIFICATIONS
 grep -q OtaUpdateFileProvider "$MANIFEST" || sed -i 's#</application>#    <provider android:name="sk.fourq.otaupdate.OtaUpdateFileProvider" android:authorities="${applicationId}.ota_update_provider" android:exported="false" android:grantUriPermissions="true">\n            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/filepaths"/>\n        </provider>\n    </application>#' "$MANIFEST"
 mkdir -p android/app/src/main/res/xml
 cat > android/app/src/main/res/xml/filepaths.xml <<'XML'
@@ -39,6 +41,18 @@ elif [ -f "$GG" ] && ! grep -q 'bmn-ota' "$GG"; then
   printf '\n// bmn-ota\ndependencies {\n    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.4"\n}\n' >> "$GG"
   printf '\nandroid {\n    lintOptions {\n        checkReleaseBuilds false\n        abortOnError false\n    }\n}\n' >> "$GG"
 fi
+# Background version checks via WorkManager (system-managed; not instant push).
+# This has no Firebase/API key requirement and uses only the public app-version endpoint.
+if [ -f "$GK" ] && ! grep -q 'bmn-background-updates' "$GK"; then
+  printf '\n// bmn-background-updates\ndependencies {\n    implementation("androidx.work:work-runtime:2.11.2")\n}\n' >> "$GK"
+elif [ -f "$GG" ] && ! grep -q 'bmn-background-updates' "$GG"; then
+  printf '\n// bmn-background-updates\ndependencies {\n    implementation "androidx.work:work-runtime:2.11.2"\n}\n' >> "$GG"
+fi
+# flutter create generates a minimal MainActivity; use our maintained native integration.
+NATIVE=android/app/src/main/kotlin/ir/boshrooyeh/boshrouyeh_man
+mkdir -p "$NATIVE"
+cp tool/android/MainActivity.kt "$NATIVE/MainActivity.kt"
+cp tool/android/UpdateCheckWorker.kt "$NATIVE/UpdateCheckWorker.kt"
 # App label (Persian) and cleartext off.
 sed -i 's#android:label="[^"]*"#android:label="بشرویهٔ من"#' "$MANIFEST"
 grep -q usesCleartextTraffic "$MANIFEST" || sed -i 's#<application#<application android:usesCleartextTraffic="false"#' "$MANIFEST"
