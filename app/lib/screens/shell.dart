@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -20,16 +22,50 @@ class Shell extends StatefulWidget {
   State<Shell> createState() => ShellState();
 }
 
-class ShellState extends State<Shell> {
+class ShellState extends State<Shell> with WidgetsBindingObserver {
   int index = 0;
   void go(int i) => setState(() => index = i);
+
+  DateTime? _lastUpdateCheck;
+  Timer? _updateTimer;
+  bool _checking = false;
+  bool _foreground = true;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) Updater.checkOnStart(context, context.read<Api>());
-    });
+    WidgetsBinding.instance.addObserver(this);
+    // Notices are checked on launch, whenever the user returns to the app,
+    // and periodically while the app is open. No background polling is claimed.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkForUpdates());
+    _updateTimer = Timer.periodic(const Duration(minutes: 30), (_) => _checkForUpdates());
+  }
+
+  Future<void> _checkForUpdates() async {
+    if (!mounted || !_foreground || _checking) return;
+    final now = DateTime.now();
+    if (_lastUpdateCheck != null &&
+        now.difference(_lastUpdateCheck!) < const Duration(minutes: 15)) return;
+    _lastUpdateCheck = now;
+    _checking = true;
+    try {
+      await Updater.checkOnStart(context, context.read<Api>());
+    } finally {
+      _checking = false;
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _foreground = state == AppLifecycleState.resumed;
+    if (_foreground) _checkForUpdates();
+  }
+
+  @override
+  void dispose() {
+    _updateTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   @override
